@@ -21,7 +21,7 @@ RUN chmod 0644 /etc/cron.d/hello-cron
 RUN touch /var/log/cron.log
 
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install -r pip_requirements/requirements.txt
 
 # Run the command on container startup
 CMD cron && tail -f /var/log/cron.log

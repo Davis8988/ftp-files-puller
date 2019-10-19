@@ -3,7 +3,6 @@ import ftplib
 import socket
 import os
 import ntpath
-import sys
 from functools import wraps
 from MyModules import MyGlobals
 
@@ -114,7 +113,9 @@ def ftp_check_path_type(ftp_con, ftp_path_to_check):
     if change_ftp_dir(ftp_con, ftp_path_to_check):
         return FTPPathType.FOLDER
 
-    print("{} is not a folder. Checking if it's a file".format(ftp_path_to_check))
+    if MyGlobals.isVerbose:
+        print("{} is not a folder. Checking if it's a file".format(ftp_path_to_check))
+
     path_parent = ntpath.split(ftp_path_to_check)[0]
     path_name = ntpath.basename(ftp_path_to_check)
     if path_name == '':
@@ -130,8 +131,10 @@ def ftp_check_path_type(ftp_con, ftp_path_to_check):
     file_list = get_file_list(ftp_con)
     if file_list is None or file_list is False:
         return FTPPathType.ERROR
-    print('cur_loc=',cur_loc)
-    print('{} Files:\n---------------\n{}\n---------------'.format(path_parent, '\n'.join(file_list)))
+
+    if MyGlobals.isVeryVerbose:
+        print('{} Files:\n---------------\n{}\n---------------'.format(path_parent, '\n'.join(file_list)))
+
     path_name = str(path_name).strip().lower()
     for file_name in file_list:
         if str(file_name).strip().lower() == path_name:
@@ -235,6 +238,7 @@ def _download_ftp_file(ftp_con, file, dest, create_dirs=False):
 
 
 def get_file_list(ftp_con):
+    cur_loc = ''
     if MyGlobals.isVerbose:
         cur_loc = ftp_get_pwd(ftp_con)
         if cur_loc:
@@ -243,7 +247,10 @@ def get_file_list(ftp_con):
             print("Attempting to get file list")
     file_list = _get_file_list(ftp_con)
     if file_list and MyGlobals.isVerbose:
-        print("Success - got file list of {}".format(file_list))
+        if cur_loc:
+            print("Success - got file list")
+        else:
+            print("Success - got file list of: {}".format(cur_loc))
 
     return file_list
 
@@ -258,7 +265,7 @@ def _get_file_list(ftp_con):
 
 def change_ftp_dir(ftp_con, dir_path):
     if MyGlobals.isVerbose:
-        print('Changing ftp dir to {}'.format(dir_path))
+        print('Attempting to change ftp-dir to {}'.format(dir_path))
     return _change_ftp_dir(ftp_con, dir_path)
 
 
@@ -268,14 +275,14 @@ def _change_ftp_dir(ftp_con, dir_path):
         ftp_con.cwd(dir_path)
         return True
     except ftp_errors_without_timeouts_errors as errorMsg:
-        print('Failed changing ftp dir to {}\nError:\n{}'.format(dir_path, errorMsg))
+        print('Failed changing ftp-dir to {}\nError:\n{}'.format(dir_path, errorMsg))
         return None
 
 
 def download_ftp_dir(ftp_con, ftp_src, dest):
     dest = MyGlobals.remove_trailing_slash(dest)
     ftp_src = MyGlobals.remove_trailing_slash(ftp_src)
-    src_path_dir_name = os.path.basename(os.path.normpath(ftp_src))
+    src_path_dir_name = MyGlobals.getDirName(ftp_src)
 
     download_result = _download_ftp_dir(ftp_con, ftp_src, dest + '/' + src_path_dir_name)
 
@@ -293,7 +300,8 @@ def _download_ftp_dir(ftp_con, ftp_src, dest):
     if file_list is None or file_list is False:
         return False
 
-    print('{} Files:\n---------------\n{}\n---------------'.format(ftp_src, '\n'.join(file_list)))
+    ftp_src_dir_name = MyGlobals.getDirName(ftp_src)
+    print('Dir {} Files:\n  -- {}\n\n'.format(ftp_src_dir_name, '\n  -- '.join(file_list)))
 
     cur_ind = 0
     end_ind = len(file_list)

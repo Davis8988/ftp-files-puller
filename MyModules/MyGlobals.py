@@ -18,15 +18,15 @@ ftpRetriesCount_Default = 10
 sleepForBetweenActions_Default = 3
 sleepBetweenDownloads_Default = 0.05
 
-ftpAddr = os.getenv('FTP_ADDRESS', None)
+ftpAddr = os.getenv('FTP_ADDRESS', '')
 ftpPort = os.getenv('FTP_PORT', ftpPort_Default)
-ftpUser = os.getenv('FTP_USER', None)
-ftpPassword = os.getenv('FTP_PASSWORD', None)
+ftpUser = os.getenv('FTP_USER', '')
+ftpPassword = os.getenv('FTP_PASSWORD', '')
 ftpRetriesCount = os.getenv('FTP_RETRIES_COUNT', ftpRetriesCount_Default)
-ftpSourcePath = os.getenv('FTP_SOURCE_PATH', None)
-destPath = os.getenv('FTP_DEST_PATH', None)
-ftpEncryptKey = os.getenv('FTP_ENCRYPT_KEY', None)
-passwordEncrypterExe = os.getenv('FTP_ENCRYPTER_PATH', None)
+ftpSourcePath = os.getenv('FTP_SOURCE_PATH', '')
+destPath = os.getenv('FTP_DEST_PATH', '')
+ftpEncryptKey = os.getenv('FTP_ENCRYPT_KEY', '')
+passwordEncrypterExe = os.getenv('FTP_ENCRYPTER_PATH', '')
 ftpActionsTimeoutSec = os.getenv('FTP_ACTIONS_TIMEOUT', ftpActionsTimeoutSec_Default)
 isRemoveSrc = False
 isHashed = False
@@ -34,6 +34,10 @@ isSilent = False
 isVerbose = False
 isVeryVerbose = False
 helpStr = ''
+
+
+def getDirName(dirPath):
+    return os.path.basename(os.path.normpath(dirPath))
 
 
 def sleep_for_a_while(sleep_sec):
@@ -116,6 +120,17 @@ def get_help_string():
 
 
 def check_params():
+    global ftpAddr
+    global ftpPort
+    global ftpUser
+    global ftpPassword
+    global ftpActionsTimeoutSec
+    global ftpRetriesCount
+    global ftpSourcePath
+    global destPath
+    global ftpEncryptKey
+    global passwordEncrypterExe
+
     if isVerbose:
         print("Validating params")
     # Must have at least address, user, pass, src and dest paths
@@ -128,6 +143,25 @@ def check_params():
     if isHashed and not (ftpEncryptKey or passwordEncrypterExe):
         error_msg = "Hashed flag detected but missing encryption key [-k] OR password-encrypter.exe [-e] path"
         terminate_program(1, error_msg)
+
+    # Convert params types:
+    try:
+        ftpPort = int(ftpPort)
+        ftpActionsTimeoutSec = int(ftpActionsTimeoutSec)
+        ftpRetriesCount = int(ftpRetriesCount)
+        ftpAddr = str(ftpAddr)
+        ftpUser = str(ftpUser)
+        ftpPassword = str(ftpPassword)
+        ftpSourcePath = str(ftpSourcePath)
+        destPath = str(destPath)
+        ftpEncryptKey = str(ftpEncryptKey)
+        passwordEncrypterExe = str(passwordEncrypterExe)
+
+    except BaseException as errorMsg:
+        print('Failed validating params.\nError:\n{}'.format(errorMsg))
+        return False
+
+
     if isVeryVerbose:
         print("Success - params are ok")
     return True
