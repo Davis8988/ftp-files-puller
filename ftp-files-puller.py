@@ -5,6 +5,7 @@ import sys
 from MyModules import MyGlobals
 from MyModules import MyFtpLib
 from MyModules import MyPasswordDecipher
+from MyModules import MyCrontab
 
 
 # Configuration global vars can be found at MyModules/MyGlobals.py
@@ -25,7 +26,10 @@ def main():
     if not MyGlobals.check_params():
         MyGlobals.terminate_program(1)
 
-    if MyGlobals.isAddCronjob:
+    if MyGlobals.isRunAsCronjob:
+        command_str = MyCrontab.create_crontab_command()
+        crontab_time = MyGlobals.crontab_time
+        MyCrontab.create_crontab_job()
 
     # Get connection to FTP server
     if MyGlobals.isVerbose:

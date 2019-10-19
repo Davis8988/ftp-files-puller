@@ -82,7 +82,7 @@ def get_help_string():
     help_str += "Usage:\n"
     help_str += scriptName + " -a <server> -u <user> -p <pass> -s <src file/dir path> -d <dest dir path> [flags] \n\n"
 
-    help_str += "Args:\n"
+    help_str += "FTP:\n"
     help_str += " -a, --ftp_addr=         : FTP-Server name or ip.\n"
     help_str += " -o, --ftp_port=         : FTP-Port to connect to. Default is {}\n".format(ftpPort_Default)
     help_str += " -u, --ftp_user=         : FTP-User to connect with.\n"
@@ -90,12 +90,15 @@ def get_help_string():
     help_str += " -t, --ftp_timeout=      : FTP actions timeout in seconds. Default is: {}\n".format(ftpActionsTimeoutSec_Default)
     help_str += " -r, --ftp_retries=      : FTP actions retries count when timeout expires. Default is: {}\n\n".format(ftpRetriesCount_Default)
 
-    help_str += "Flags:\n"
+    help_str += "Paths:\n"
     help_str += " -s, --src=              : Source FTP path of file or dir to pull.\n"
-    help_str += " -d, --dest=             : Local/network destination dir path.\n"
+    help_str += " -d, --dest=             : Local/network destination dir path.\n\n"
+
+    help_str += "Encryption:\n"
     help_str += " -k, --encrypt_key=      : When using hashed password, use this key to interpret it.\n"
     help_str += " -e, --encrypter_path=   : Passwords-encrypter.exe path to interpret hashed password instead of key.\n\n"
 
+    help_str += "Flags:\n"
     help_str += " --remove_src            : Remove pulled source file/dir if successful.\n"
     help_str += " --hashed                : Indicate that password is hashed and it needs to be deciphered (using a key[-k] or encrypter[-e]).\n"
     help_str += " --silent                : Silent mode - no user interaction.\n"
