@@ -38,6 +38,7 @@ isVeryVerbose = False
 crontab_user = os.getenv('CRONTAB_USER', '')
 crontab_time = os.getenv('CRONTAB_TIME', '')
 crontab_comment = os.getenv('CRONTAB_COMMENT', '')
+isAddCronjob = False
 isEveryReboot = False
 
 
@@ -102,10 +103,13 @@ def get_help_string():
     help_str += " --very_verbose          : A lot more output on each action.\n\n"
 
     help_str += "Crontab:\n"
+    help_str += " --add_cronjob           : Add run of this script as a cronjob.\n"
+    help_str += " --every_reboot          : Enable job to start on every reboot.\n"
     help_str += " --crontab_user=         : Crontab job user.\n"
     help_str += " --crontab_time=         : Crontab time.\n"
     help_str += " --crontab_comment=      : Crontab job comment.\n\n"
 
+    help_str += "Help:\n"
     help_str += " -h, --help              : print this help message and exit\n\n"
 
     help_str += "Default values read from environment variables on startup:\n"
@@ -118,17 +122,17 @@ def get_help_string():
     help_str += "  -s, --src=              :  [FTP_SOURCE_PATH]\n"
     help_str += "  -d, --dest=             :  [FTP_DEST_PATH]\n"
     help_str += "  -k, --key=              :  [FTP_ENCRYPT_KEY]\n"
-    help_str += "  -e, --encrypter_path=   :  [FTP_ENCRYPTER_PATH]\n\n"
-    help_str += "  --crontab_user=         :  [CRONTAB_USER]\n\n"
-    help_str += "  --crontab_time=         :  [CRONTAB_TIME]\n\n"
+    help_str += "  -e, --encrypter_path=   :  [FTP_ENCRYPTER_PATH]\n"
+    help_str += "  --crontab_user=         :  [CRONTAB_USER]\n"
+    help_str += "  --crontab_time=         :  [CRONTAB_TIME]\n"
     help_str += "  --crontab_comment=      :  [CRONTAB_COMMENT]\n\n"
 
-    help_str += "Run Examples\n"
-    help_str += "  Pull dir:        " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /david_files/bash_scripts -d /usr/scripts --silent \n"
-    help_str += "  Pull file:       " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /docs/usernames.txt -d /usr/docs --silent \n"
-    help_str += "  Pull dir [WIN]:  " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /docs/usernames.txt -d C:\\Users\\david\\Desktop --silent \n"
-    help_str += "  Hashed Passwd:   " + scriptName + " -a 192.168.12.56 -u myUser -p 21f8j9f8jw9sdui -k 2u3r9dewfjf -s /docs/usernames.txt -d C:\\Users\\david\\Desktop --hashed --silent \n"
-    help_str += "  Hashed Passwd2:  " + scriptName + " -a 192.168.12.56 -u myUser -p 21f8j9f8jw9sdui -e D:\\PasswordsEncrypter\\passwords-encrypter.exe -s /docs/usernames.txt -d C:\\Users\\david\\Desktop --hashed --silent \n"
+    help_str += "Examples\n"
+    help_str += " Pull dir:         " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /david_files/bash_scripts -d /usr/scripts --silent \n"
+    help_str += " Pull file:        " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /docs/usernames.txt -d /usr/docs --silent \n"
+    help_str += " Pull dir [WIN]:   " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /docs/usernames.txt -d C:\\Users\\david\\Desktop --silent \n"
+    help_str += " Hashed Passwd:    " + scriptName + " -a 192.168.12.56 -u myUser -p 21f8j9f8jw9sdui -k 2u3r9dewfjf -s /docs/usernames.txt -d C:\\Users\\david\\Desktop --hashed --silent \n"
+    help_str += " Hashed Passwd 2:  " + scriptName + " -a 192.168.12.56 -u myUser -p 21f8j9f8jw9sdui -e D:\\PasswordsEncrypter\\passwords-encrypter.exe -s /docs/usernames.txt -d C:\\Users\\david\\Desktop --hashed --silent \n"
 
     return help_str
 
@@ -144,18 +148,25 @@ def check_params():
     global destPath
     global ftpEncryptKey
     global passwordEncrypterExe
+    global crontab_user
+    global crontab_time
+    global crontab_comment
+    global isAddCronjob
 
     if isVerbose:
         print("Validating params")
     # Must have at least address, user, pass, src and dest paths
-    if not (
-            ftpAddr and ftpUser and ftpPassword and ftpSourcePath and destPath):
+    if not (ftpAddr and ftpUser and ftpPassword and ftpSourcePath and destPath):
         error_msg = "Please provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path"
         terminate_program(1, error_msg)
 
     # If hashed - then needs a key or the passwords-encrypter.exe file path
     if isHashed and not (ftpEncryptKey or passwordEncrypterExe):
-        error_msg = "Hashed flag detected but missing encryption key [-k] OR password-encrypter.exe [-e] path"
+        error_msg = "--hashed flag detected but missing encryption key [-k] OR password-encrypter.exe [-e] path"
+        terminate_program(1, error_msg)
+
+    if isAddCronjob and not (crontab_user or crontab_time):
+        error_msg = "--add_cronjob flag detected but missing --crontab_user= OR --crontab_time="
         terminate_program(1, error_msg)
 
     # Convert params types:
@@ -170,7 +181,9 @@ def check_params():
         destPath = str(destPath)
         ftpEncryptKey = str(ftpEncryptKey)
         passwordEncrypterExe = str(passwordEncrypterExe)
-
+        crontab_user = str(crontab_user)
+        crontab_time = str(crontab_time)
+        crontab_comment = str(crontab_comment)
     except BaseException as errorMsg:
         print('Failed validating params.\nError:\n{}'.format(errorMsg))
         return False
@@ -202,6 +215,8 @@ def read_command_line_args(argv):
                                                                    "crontab_user=",
                                                                    "crontab_time=",
                                                                    "crontab_comment=",
+                                                                   "add_cronjob",
+                                                                   "every_reboot",
                                                                    "help"])
     except getopt.GetoptError as error_msg:
         terminate_program(1, "\nError preparing 'getopt' object:\n" + str(error_msg))
@@ -225,6 +240,8 @@ def read_command_line_args(argv):
     global crontab_user
     global crontab_time
     global crontab_comment
+    global isAddCronjob
+    global isEveryReboot
 
     received_args = ''
 
@@ -272,6 +289,10 @@ def read_command_line_args(argv):
             crontab_time = arg
         elif opt in ("--crontab_comment"):
             crontab_comment = arg
+        elif opt in ["--add_cronjob"]:
+            isAddCronjob = True
+        elif opt in ["--every_reboot"]:
+            isEveryReboot = True
         else:
             error_msg = "Error - unexpected arg: '{}'".format(arg)
             terminate_program(1, error_msg)
