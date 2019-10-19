@@ -33,10 +33,15 @@ isHashed = False
 isSilent = False
 isVerbose = False
 isVeryVerbose = False
-helpStr = ''
+
+# Python-Crontab
+crontab_user = os.getenv('CRONTAB_USER', '')
+crontab_time = os.getenv('CRONTAB_TIME', '')
+crontab_comment = os.getenv('CRONTAB_COMMENT', '')
+isEveryReboot = False
 
 
-def getDirName(dirPath):
+def get_dir_name(dirPath):
     return os.path.basename(os.path.normpath(dirPath))
 
 
@@ -74,16 +79,17 @@ def get_help_string():
     help_str += "\n"
     help_str += "This tool pulls files/dirs from an FTP server to given path.\n\n"
     help_str += "Usage:\n"
-    help_str += scriptName + " -a <server> -u <user> -p <pass> -s <src file/dir path> -d <dest dir path> [flags] \n"
+    help_str += scriptName + " -a <server> -u <user> -p <pass> -s <src file/dir path> -d <dest dir path> [flags] \n\n"
+
+    help_str += "Args:\n"
     help_str += " -a, --ftp_addr=         : FTP-Server name or ip.\n"
     help_str += " -o, --ftp_port=         : FTP-Port to connect to. Default is {}\n".format(ftpPort_Default)
     help_str += " -u, --ftp_user=         : FTP-User to connect with.\n"
     help_str += " -p, --ftp_password=     : FTP-Password to connect. If hashed add flag --hash.\n"
-    help_str += " -t, --ftp_timeout=      : FTP actions timeout in seconds. Default is: {}\n\n".format(
-        ftpActionsTimeoutSec_Default)
-    help_str += " -r, --ftp_retries=      : FTP actions retries count when timeout expires. Default is: {}\n\n".format(
-        ftpRetriesCount_Default)
+    help_str += " -t, --ftp_timeout=      : FTP actions timeout in seconds. Default is: {}\n".format(ftpActionsTimeoutSec_Default)
+    help_str += " -r, --ftp_retries=      : FTP actions retries count when timeout expires. Default is: {}\n\n".format(ftpRetriesCount_Default)
 
+    help_str += "Flags:\n"
     help_str += " -s, --src=              : Source FTP path of file or dir to pull.\n"
     help_str += " -d, --dest=             : Local/network destination dir path.\n"
     help_str += " -k, --encrypt_key=      : When using hashed password, use this key to interpret it.\n"
@@ -93,7 +99,12 @@ def get_help_string():
     help_str += " --hashed                : Indicate that password is hashed and it needs to be deciphered (using a key[-k] or encrypter[-e]).\n"
     help_str += " --silent                : Silent mode - no user interaction.\n"
     help_str += " --verbose               : More output on each action.\n"
-    help_str += " --very_verbose          : A lot more output on each action.\n"
+    help_str += " --very_verbose          : A lot more output on each action.\n\n"
+
+    help_str += "Crontab:\n"
+    help_str += " --crontab_user=         : Crontab job user.\n"
+    help_str += " --crontab_time=         : Crontab time.\n"
+    help_str += " --crontab_comment=      : Crontab job comment.\n\n"
 
     help_str += " -h, --help              : print this help message and exit\n\n"
 
@@ -108,6 +119,9 @@ def get_help_string():
     help_str += "  -d, --dest=             :  [FTP_DEST_PATH]\n"
     help_str += "  -k, --key=              :  [FTP_ENCRYPT_KEY]\n"
     help_str += "  -e, --encrypter_path=   :  [FTP_ENCRYPTER_PATH]\n\n"
+    help_str += "  --crontab_user=         :  [CRONTAB_USER]\n\n"
+    help_str += "  --crontab_time=         :  [CRONTAB_TIME]\n\n"
+    help_str += "  --crontab_comment=      :  [CRONTAB_COMMENT]\n\n"
 
     help_str += "Run Examples\n"
     help_str += "  Pull dir:        " + scriptName + " -a 192.168.12.56 -u myUser -p myPass123 -s /david_files/bash_scripts -d /usr/scripts --silent \n"
@@ -185,6 +199,9 @@ def read_command_line_args(argv):
                                                                    "silent",
                                                                    "verbose",
                                                                    "very_verbose",
+                                                                   "crontab_user=",
+                                                                   "crontab_time=",
+                                                                   "crontab_comment=",
                                                                    "help"])
     except getopt.GetoptError as error_msg:
         terminate_program(1, "\nError preparing 'getopt' object:\n" + str(error_msg))
@@ -205,12 +222,16 @@ def read_command_line_args(argv):
     global isSilent
     global isVerbose
     global isVeryVerbose
+    global crontab_user
+    global crontab_time
+    global crontab_comment
 
     received_args = ''
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            terminate_program(0)
+            helpStr = get_help_string()
+            terminate_program(0, msg=helpStr)
         elif opt in ("-a", "--ftp_addr"):
             ftpAddr = arg
         elif opt in ("-o", "--ftp_port"):
@@ -245,6 +266,12 @@ def read_command_line_args(argv):
         elif opt in ["--very_verbose"]:
             isVerbose = True
             isVeryVerbose = True
+        elif opt in ("--crontab_user"):
+            crontab_user = arg
+        elif opt in ("--crontab_time"):
+            crontab_time = arg
+        elif opt in ("--crontab_comment"):
+            crontab_comment = arg
         else:
             error_msg = "Error - unexpected arg: '{}'".format(arg)
             terminate_program(1, error_msg)

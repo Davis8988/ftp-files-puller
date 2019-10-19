@@ -282,7 +282,7 @@ def _change_ftp_dir(ftp_con, dir_path):
 def download_ftp_dir(ftp_con, ftp_src, dest):
     dest = MyGlobals.remove_trailing_slash(dest)
     ftp_src = MyGlobals.remove_trailing_slash(ftp_src)
-    src_path_dir_name = MyGlobals.getDirName(ftp_src)
+    src_path_dir_name = MyGlobals.get_dir_name(ftp_src)
 
     download_result = _download_ftp_dir(ftp_con, ftp_src, dest + '/' + src_path_dir_name)
 
@@ -300,7 +300,7 @@ def _download_ftp_dir(ftp_con, ftp_src, dest):
     if file_list is None or file_list is False:
         return False
 
-    ftp_src_dir_name = MyGlobals.getDirName(ftp_src)
+    ftp_src_dir_name = MyGlobals.get_dir_name(ftp_src)
     print('Dir {} Files:\n  -- {}\n\n'.format(ftp_src_dir_name, '\n  -- '.join(file_list)))
 
     cur_ind = 0
