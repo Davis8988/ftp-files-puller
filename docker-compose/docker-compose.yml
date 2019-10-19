@@ -1,0 +1,18 @@
+# For starting ftp-puller
+version: '2'
+
+services:
+  ftp-puller:
+    image: davis8988/ftp-puller:python-3.7.2-slim
+    container_name: ftp-puller
+    environment:
+      - FTP_ADDRESS=ftp.elbitsystems.com
+      - FTP_USER=dp99662
+      - FTP_PASSWORD=QAqa3073
+      - FTP_SOURCE_PATH=/David/apt
+      - FTP_DEST_PATH=/home/user
+    ports:
+      - 21:21
+    entrypoint: ["/usr/local/bin/python", "/home/user/ftp-files-puller.py", "--very_verbose"]
+
+
