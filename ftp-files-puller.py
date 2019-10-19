@@ -25,6 +25,8 @@ def main():
     if not MyGlobals.check_params():
         MyGlobals.terminate_program(1)
 
+    if MyGlobals.isAddCronjob:
+
     # Get connection to FTP server
     if MyGlobals.isVerbose:
         print("Getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))

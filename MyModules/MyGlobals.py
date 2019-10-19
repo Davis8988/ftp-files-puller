@@ -38,7 +38,7 @@ isVeryVerbose = False
 crontab_user = os.getenv('CRONTAB_USER', '')
 crontab_time = os.getenv('CRONTAB_TIME', '')
 crontab_comment = os.getenv('CRONTAB_COMMENT', '')
-isAddCronjob = False
+isRunAsCronjob = False
 isEveryReboot = False
 
 
@@ -103,7 +103,7 @@ def get_help_string():
     help_str += " --very_verbose          : A lot more output on each action.\n\n"
 
     help_str += "Crontab:\n"
-    help_str += " --add_cronjob           : Add run of this script as a cronjob.\n"
+    help_str += " --run_as_cronjob        : Add run of this script as a cronjob.\n"
     help_str += " --every_reboot          : Enable job to start on every reboot.\n"
     help_str += " --crontab_user=         : Crontab job user.\n"
     help_str += " --crontab_time=         : Crontab time.\n"
@@ -151,10 +151,11 @@ def check_params():
     global crontab_user
     global crontab_time
     global crontab_comment
-    global isAddCronjob
+    global isRunAsCronjob
 
     if isVerbose:
         print("Validating params")
+
     # Must have at least address, user, pass, src and dest paths
     if not (ftpAddr and ftpUser and ftpPassword and ftpSourcePath and destPath):
         error_msg = "Please provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path"
@@ -165,8 +166,8 @@ def check_params():
         error_msg = "--hashed flag detected but missing encryption key [-k] OR password-encrypter.exe [-e] path"
         terminate_program(1, error_msg)
 
-    if isAddCronjob and not (crontab_user or crontab_time):
-        error_msg = "--add_cronjob flag detected but missing --crontab_user= OR --crontab_time="
+    if isRunAsCronjob and not (crontab_user or crontab_time):
+        error_msg = "--run_as_cronjob flag detected but missing --crontab_user= OR --crontab_time="
         terminate_program(1, error_msg)
 
     # Convert params types:
@@ -215,7 +216,7 @@ def read_command_line_args(argv):
                                                                    "crontab_user=",
                                                                    "crontab_time=",
                                                                    "crontab_comment=",
-                                                                   "add_cronjob",
+                                                                   "run_as_cronjob",
                                                                    "every_reboot",
                                                                    "help"])
     except getopt.GetoptError as error_msg:
@@ -240,7 +241,7 @@ def read_command_line_args(argv):
     global crontab_user
     global crontab_time
     global crontab_comment
-    global isAddCronjob
+    global isRunAsCronjob
     global isEveryReboot
 
     received_args = ''
@@ -289,8 +290,8 @@ def read_command_line_args(argv):
             crontab_time = arg
         elif opt in ("--crontab_comment"):
             crontab_comment = arg
-        elif opt in ["--add_cronjob"]:
-            isAddCronjob = True
+        elif opt in ["--run_as_cronjob"]:
+            isRunAsCronjob = True
         elif opt in ["--every_reboot"]:
             isEveryReboot = True
         else:
