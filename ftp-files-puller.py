@@ -54,12 +54,12 @@ def main():
 
         # Start downloading files:
         if download_result:
-            MyGlobals.terminate_program(0, 'SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+            print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
         else:
             MyGlobals.terminate_program(1, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
 
     print("Main Finished")
-
+    MyGlobals.terminate_program(0)
 
 if __name__ == '__main__':
     main()

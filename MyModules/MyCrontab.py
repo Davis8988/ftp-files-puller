@@ -15,26 +15,42 @@ from MyModules import MyGlobals
 # │ │ │ │ │
 # * * * * *  command to execute
 
+
 def setup_script_as_crontab_job():
     command_str = create_crontab_command()
-    crontab_time = MyGlobals.crontab_time
-    create_crontab_job()
+    time_str = MyGlobals.crontab_time
+    user_to_use = MyGlobals.crontab_user
+    comment_str = MyGlobals.crontab_comment
+    is_every_reboot = MyGlobals.isEveryReboot
+
+    crontab_job = prepare_crontab_job(user_to_use, time_str, command_str, comment_str, is_every_reboot)
+    if not create_crontab_job(crontab_job):
+        return False
 
 
-def create_crontab_job(user_to_use, time_str, command_str, comment_str='', is_every_reboot=False):
+def create_crontab_job(crontab_job):
+    try:
+        crontab_job.write()
+        return True
+    except BaseException as errorMsg:
+        print('Failed creating crontab job\nError:\n{}'.format(errorMsg) )
+        return False
+
+
+def prepare_crontab_job(user_to_use, time_str, command_str, comment_str='', is_every_reboot=False):
     try:
         cron = CronTab(user=user_to_use)
         crontab_job = cron.new(command=command_str, comment=comment_str)
         crontab_job.setall(time_str)
         if is_every_reboot:
             crontab_job.every_reboot()
-        crontab_job.write()
-        return True
+        return crontab_job
     except BaseException as errorMsg:
-        print(
-            'Failed creating crontab job to run:\n - Command: {}\n - Time: {}\nError:\n{}'.format(command_str, time_str,
-                                                                                                  errorMsg))
-        return False
+        print('Failed creating crontab job to run:\n - Command: {}'
+                                                 '\n - Time: {}'
+                                                 '\n - User: {}'
+                                                 '\nError:\n{}'.format(command_str, time_str, user_to_use, errorMsg))
+        return None
 
 
 def create_crontab_command():
