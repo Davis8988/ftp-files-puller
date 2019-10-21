@@ -29,7 +29,7 @@ def setup_script_as_crontab_job(clear_old_jobs=True):
 
     if clear_old_jobs and len(cron) > 0:
         if MyGlobals.isVerbose:
-            print('Removing old crontab jobs with comment: {}'.format(comment_str))
+            print("Removing old crontab jobs with comment: '{}'".format(comment_str))
         if not remove_jobs_with_comment(cron, comment_str):
             return False
 
