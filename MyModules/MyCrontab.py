@@ -16,7 +16,26 @@ from MyModules import MyGlobals
 # * * * * *  command to execute
 
 
-def setup_script_as_crontab_job(clear_old_jobs=True):
+def remove_current_ftp_puller_crontab_jobs():
+    comment_str = MyGlobals.crontab_comment
+    user_to_use = MyGlobals.crontab_user
+
+    cron = connect_cron_for_user(user_to_use)
+    if cron is None:
+        return False
+
+    removed_count = 0
+    if len(cron) > 0:
+        removed_count = remove_jobs_with_comment(cron, comment_str)
+        if removed_count is False:
+            return False
+
+    if not write_crontab_jobs(cron):
+        return False
+
+    return removed_count
+
+def setup_script_as_crontab_job():
     command_str = create_crontab_command()
     comment_str = MyGlobals.crontab_comment
     time_str = MyGlobals.crontab_time
@@ -26,12 +45,6 @@ def setup_script_as_crontab_job(clear_old_jobs=True):
     cron = connect_cron_for_user(user_to_use)
     if cron is None:
         return False
-
-    if clear_old_jobs and len(cron) > 0:
-        if MyGlobals.isVerbose:
-            print("Removing old crontab jobs with comment: '{}'".format(comment_str))
-        if not remove_jobs_with_comment(cron, comment_str):
-            return False
 
     if not add_crontab_job(cron, user_to_use, time_str, command_str, comment_str, is_every_reboot):
         return False
@@ -43,20 +56,26 @@ def setup_script_as_crontab_job(clear_old_jobs=True):
 
 
 def remove_jobs_with_comment(cron, comment_str):
+    if MyGlobals.isVerbose:
+        print("Removing crontab jobs with comment: '{}'".format(comment_str))
+
+    before_jobs_count = len(cron)
     try:
         if MyGlobals.isVeryVerbose:
-            print('Jobs count before removing: {}'.format(len(cron)))
+            print('Jobs count before removing: {}'.format(before_jobs_count))
         cron.remove_all(comment=comment_str)
+        after_jobs_count = len(cron)
         if MyGlobals.isVeryVerbose:
-            print('Jobs count after removing: {}'.format(len(cron)))
-        return True
+            print('Jobs count after removing: {}'.format(after_jobs_count))
+        total_jobs_removed = before_jobs_count - after_jobs_count
+        return total_jobs_removed
     except BaseException as errorMsg:
         print('Failed to remove crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
         return False
 
 
 def write_crontab_jobs(cron):
-    if MyGlobals.isVeryVerbose:
+    if MyGlobals.isVerbose:
         print('Writing crontab settings to the system')
     try:
         cron.write()

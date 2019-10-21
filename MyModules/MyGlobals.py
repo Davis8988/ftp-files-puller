@@ -19,6 +19,7 @@ ftpActionsTimeoutSec_Default = 8
 ftpRetriesCount_Default = 10
 sleepForBetweenActions_Default = 3
 sleepBetweenDownloads_Default = 0.05
+crontabJobComment_Default = 'ftp-files-puller crontab job'
 
 ftpAddr = os.getenv('FTP_ADDRESS', '')
 ftpPort = os.getenv('FTP_PORT', ftpPort_Default)
@@ -39,9 +40,10 @@ isVeryVerbose = False
 # Python-Crontab
 crontab_user = os.getenv('CRONTAB_USER', getpass.getuser())
 crontab_time = os.getenv('CRONTAB_TIME', '')
-crontab_comment = os.getenv('CRONTAB_COMMENT', 'ftp-files-puller crontab job')
+crontab_comment = os.getenv('CRONTAB_COMMENT', crontabJobComment_Default)
 isRunAsCronjob = False
 isEveryReboot = False
+isRemoveCronJobs = False
 
 
 def get_dir_name(dir_path):
@@ -85,37 +87,38 @@ def get_help_string():
     help_str += scriptName + " -a <server> -u <user> -p <pass> -s <src file/dir path> -d <dest dir path> [flags] \n\n"
 
     help_str += "FTP:\n"
-    help_str += " -a, --ftp_addr=         : FTP-Server name or ip.\n"
-    help_str += " -o, --ftp_port=         : FTP-Port to connect to. Default is {}\n".format(ftpPort_Default)
-    help_str += " -u, --ftp_user=         : FTP-User to connect with.\n"
-    help_str += " -p, --ftp_password=     : FTP-Password to connect. If hashed add flag --hash.\n"
-    help_str += " -t, --ftp_timeout=      : FTP actions timeout in seconds. Default is: {}\n".format(ftpActionsTimeoutSec_Default)
-    help_str += " -r, --ftp_retries=      : FTP actions retries count when timeout expires. Default is: {}\n\n".format(ftpRetriesCount_Default)
+    help_str += " -a, --ftp_addr=          : FTP-Server name or ip.\n"
+    help_str += " -o, --ftp_port=          : FTP-Port to connect to. Default is {}\n".format(ftpPort_Default)
+    help_str += " -u, --ftp_user=          : FTP-User to connect with.\n"
+    help_str += " -p, --ftp_password=      : FTP-Password to connect. If hashed add flag --hash.\n"
+    help_str += " -t, --ftp_timeout=       : FTP actions timeout in seconds. Default is: {}\n".format(ftpActionsTimeoutSec_Default)
+    help_str += " -r, --ftp_retries=       : FTP actions retries count when timeout expires. Default is: {}\n\n".format(ftpRetriesCount_Default)
 
     help_str += "Paths:\n"
-    help_str += " -s, --src=              : Source FTP path of file or dir to pull.\n"
-    help_str += " -d, --dest=             : Local/network destination dir path.\n\n"
+    help_str += " -s, --src=               : Source FTP path of file or dir to pull.\n"
+    help_str += " -d, --dest=              : Local/network destination dir path.\n\n"
 
     help_str += "Encryption:\n"
-    help_str += " -k, --encrypt_key=      : When using hashed password, use this key to interpret it.\n"
-    help_str += " -e, --encrypter_path=   : Passwords-encrypter.exe path to interpret hashed password instead of key.\n\n"
+    help_str += " -k, --encrypt_key=       : When using hashed password, use this key to interpret it.\n"
+    help_str += " -e, --encrypter_path=    : Passwords-encrypter.exe path to interpret hashed password instead of key.\n\n"
 
     help_str += "Flags:\n"
-    help_str += " --remove_src            : Remove pulled source file/dir if successful.\n"
-    help_str += " --hashed                : Indicate that password is hashed and it needs to be deciphered (using a key[-k] or encrypter[-e]).\n"
-    help_str += " --silent                : Silent mode - no user interaction.\n"
-    help_str += " --verbose               : More output on each action.\n"
-    help_str += " --very_verbose          : A lot more output on each action.\n\n"
+    help_str += " --remove_src             : Remove pulled source file/dir if successful.\n"
+    help_str += " --hashed                 : Indicate that password is hashed and it needs to be deciphered (using a key[-k] or encrypter[-e]).\n"
+    help_str += " --silent                 : Silent mode - no user interaction.\n"
+    help_str += " --verbose                : More output on each action.\n"
+    help_str += " --very_verbose           : A lot more output on each action.\n\n"
 
     help_str += "Crontab:\n"
-    help_str += " --run_as_cronjob        : Add run of this script as a cronjob.\n"
-    help_str += " --every_reboot          : Enable job to start on every reboot.\n"
-    help_str += " --crontab_user=         : Crontab job user.\n"
-    help_str += " --crontab_time=         : Crontab time.\n"
-    help_str += " --crontab_comment=      : Crontab job comment.\n\n"
+    help_str += " --run_as_cronjob         : Add run of this script as a cronjob.\n"
+    help_str += " --crontab_user=          : Crontab job user.\n"
+    help_str += " --crontab_time=          : Crontab time.\n"
+    help_str += " --crontab_comment=       : Crontab job comment. Default is '{}'.\n".format(crontabJobComment_Default)
+    help_str += " --remove_crontab_jobs    : Remove all crontab jobs with comment provided by '--crontab_comment='. Used for cancelling old/running jobs.\n"
+    help_str += " --every_reboot           : Enable job start on every reboot.\n\n"
 
     help_str += "Help:\n"
-    help_str += " -h, --help              : print this help message and exit\n\n"
+    help_str += " -h, --help               : print this help message and exit\n\n"
 
     help_str += "Default values read from environment variables on startup:\n"
     help_str += "  -a, --ftp_addr=         :  [FTP_ADDRESS]\n"
@@ -222,6 +225,7 @@ def read_command_line_args(argv):
                                                                    "crontab_comment=",
                                                                    "run_as_cronjob",
                                                                    "every_reboot",
+                                                                   "remove_crontab_jobs",
                                                                    "help"])
     except getopt.GetoptError as error_msg:
         terminate_program(1, "\nError preparing 'getopt' object:\n" + str(error_msg))
@@ -247,6 +251,7 @@ def read_command_line_args(argv):
     global crontab_comment
     global isRunAsCronjob
     global isEveryReboot
+    global isRemoveCronJobs
 
     received_args = ''
 
@@ -298,6 +303,8 @@ def read_command_line_args(argv):
             isRunAsCronjob = True
         elif opt in ["--every_reboot"]:
             isEveryReboot = True
+        elif opt in ["--remove_crontab_jobs"]:
+            isRemoveCronJobs = True
         else:
             error_msg = "Error - unexpected arg: '{}'".format(arg)
             terminate_program(1, error_msg)
