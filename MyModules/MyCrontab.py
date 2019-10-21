@@ -24,7 +24,7 @@ def setup_script_as_crontab_job(clear_old_jobs=True):
     is_every_reboot = MyGlobals.isEveryReboot
 
     cron = connect_cron_for_user(user_to_use)
-    if not cron:
+    if cron is None:
         return False
 
     if clear_old_jobs and len(cron) > 0:
