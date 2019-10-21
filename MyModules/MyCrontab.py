@@ -101,7 +101,7 @@ def add_crontab_job(cron, user_to_use, time_str, command_str, comment_str='', is
 
 
 def create_crontab_command():
-    full_script_path = MyGlobals.scriptName + '/' + MyGlobals.scriptName
+    full_script_path = MyGlobals.scriptPath + '/' + MyGlobals.scriptName
 
     # FTP:
     args = '-a {} '.format(MyGlobals.ftpAddr)
@@ -133,5 +133,5 @@ def create_crontab_command():
     if MyGlobals.isVeryVerbose:
         args += '--very_verbose '
 
-    full_command = 'python "' + full_script_path + '" ' + args
+    full_command = 'python3 "' + full_script_path + '" ' + args
     return full_command

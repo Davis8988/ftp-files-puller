@@ -11,7 +11,7 @@ import getpass
 from pyfiglet import Figlet
 
 scriptName = ntpath.basename(sys.argv[0])
-scriptPath = ntpath.dirname(sys.argv[0])
+scriptPath = sys.path[0]
 
 # Defaults
 ftpPort_Default = 21
