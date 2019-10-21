@@ -25,7 +25,6 @@ def setup_script_as_crontab_job(clear_old_jobs=True):
 
     cron = connect_cron_for_user(user_to_use)
     if not cron:
-        print('Failed to connect to crontab for user: {}'.format(user_to_use))
         return False
 
     if clear_old_jobs and len(cron) > 0:
@@ -67,10 +66,14 @@ def write_crontab_jobs(cron):
         return False
 
 
-def connect_cron_for_user(user_name):
+def connect_cron_for_user(user_to_use):
     if MyGlobals.isVerbose:
-        print('Connecting to crontab of user: {}'.format(user_name))
-    return CronTab(user=user_name)
+        print('Connecting to crontab of user: {}'.format(user_to_use))
+    try:
+        return CronTab(user=user_to_use)
+    except BaseException as errorMsg:
+        print('Failed to connect to crontab for user: {}\nError:\n{}'.format(user_to_use, errorMsg))
+        return None
 
 
 def add_crontab_job(cron, user_to_use, time_str, command_str, comment_str='', is_every_reboot=False):
@@ -98,7 +101,7 @@ def add_crontab_job(cron, user_to_use, time_str, command_str, comment_str='', is
 
 
 def create_crontab_command():
-    script_name = MyGlobals.scriptName
+    full_script_path = MyGlobals.scriptName + '/' + MyGlobals.scriptName
 
     # FTP:
     args = '-a {} '.format(MyGlobals.ftpAddr)
@@ -130,5 +133,5 @@ def create_crontab_command():
     if MyGlobals.isVeryVerbose:
         args += '--very_verbose '
 
-    full_command = script_name + ' ' + args
+    full_command = 'python "' + full_script_path + '" ' + args
     return full_command
