@@ -41,7 +41,6 @@ def create_crontab_command():
     args += '-p {} '.format(MyGlobals.ftpPassword)
     args += '-t {} '.format(MyGlobals.ftpActionsTimeoutSec)
     args += '-r {} '.format(MyGlobals.ftpRetriesCount)
-    args += '-r {} '.format(MyGlobals.ftpRetriesCount)
 
     # Paths:
     args += '-s {} '.format(MyGlobals.ftpSourcePath)
@@ -65,5 +64,5 @@ def create_crontab_command():
     if MyGlobals.isVeryVerbose:
         args += '--very_verbose '
 
-    full_command = ' '.join(script_name, args)
+    full_command = script_name + ' ' + args
     return full_command
