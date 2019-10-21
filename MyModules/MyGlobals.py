@@ -38,13 +38,13 @@ isVeryVerbose = False
 # Python-Crontab
 crontab_user = os.getenv('CRONTAB_USER', getpass.getuser())
 crontab_time = os.getenv('CRONTAB_TIME', '')
-crontab_comment = os.getenv('CRONTAB_COMMENT', '')
+crontab_comment = os.getenv('CRONTAB_COMMENT', 'ftp-files-puller crontab job')
 isRunAsCronjob = False
 isEveryReboot = False
 
 
-def get_dir_name(dirPath):
-    return os.path.basename(os.path.normpath(dirPath))
+def get_dir_name(dir_path):
+    return os.path.basename(os.path.normpath(dir_path))
 
 
 def sleep_for_a_while(sleep_sec):
@@ -193,7 +193,6 @@ def check_params():
         print('Failed validating params.\nError:\n{}'.format(errorMsg))
         return False
 
-
     if isVeryVerbose:
         print("Success - params are ok")
     return True
@@ -252,8 +251,8 @@ def read_command_line_args(argv):
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            helpStr = get_help_string()
-            terminate_program(0, msg=helpStr)
+            help_str = get_help_string()
+            terminate_program(0, msg=help_str)
         elif opt in ("-a", "--ftp_addr"):
             ftpAddr = arg
         elif opt in ("-o", "--ftp_port"):

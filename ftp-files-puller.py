@@ -7,8 +7,6 @@ from MyModules import MyFtpLib
 from MyModules import MyPasswordDecipher
 from MyModules import MyCrontab
 
-
-
 # Configuration global vars can be found at MyModules/MyGlobals.py
 
 #  _____ _____ ____    ____        _ _
@@ -20,7 +18,7 @@ from MyModules import MyCrontab
 
 def main():
     received_args = MyGlobals.read_command_line_args(sys.argv[1:])
-    print('FTP Puller - Started')
+    print('Main - Started')
     print('Command Line: {} {}\n'.format(sys.argv[0], received_args))
 
     # Check that params are ok
@@ -37,7 +35,8 @@ def main():
         # Get connection to FTP server
         ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
         if ftp_con is None:
-            MyGlobals.terminate_program(1, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
+            MyGlobals.terminate_program(1, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr,
+                                                                                                MyGlobals.ftpPort))
 
         # If password is hashed - attempt to decipher it
         if MyGlobals.isHashed:
@@ -56,10 +55,12 @@ def main():
         if download_result:
             print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
         else:
-            MyGlobals.terminate_program(1, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+            MyGlobals.terminate_program(1, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath,
+                                                                                    MyGlobals.destPath))
 
     print("Main Finished")
     MyGlobals.terminate_program(0)
+
 
 if __name__ == '__main__':
     main()

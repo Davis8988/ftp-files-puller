@@ -16,44 +16,85 @@ from MyModules import MyGlobals
 # * * * * *  command to execute
 
 
-def setup_script_as_crontab_job():
+def setup_script_as_crontab_job(clear_old_jobs=True):
     command_str = create_crontab_command()
+    comment_str = MyGlobals.crontab_comment
     time_str = MyGlobals.crontab_time
     user_to_use = MyGlobals.crontab_user
-    comment_str = MyGlobals.crontab_comment
     is_every_reboot = MyGlobals.isEveryReboot
 
-    crontab_job = prepare_crontab_job(user_to_use, time_str, command_str, comment_str, is_every_reboot)
-    if not crontab_job:
+    cron = connect_cron_for_user(user_to_use)
+    if not cron:
+        print('Failed to connect to crontab for user: {}'.format(user_to_use))
         return False
-    if not create_crontab_job(crontab_job):
+
+    if clear_old_jobs and len(cron) > 0:
+        if MyGlobals.isVerbose:
+            print('Removing old crontab jobs with comment: {}'.format(comment_str))
+        if not remove_jobs_with_comment(cron, comment_str):
+            return False
+
+    if not add_crontab_job(cron, user_to_use, time_str, command_str, comment_str, is_every_reboot):
         return False
+
+    if not write_crontab_jobs(cron):
+        return False
+
     return True
 
 
-def create_crontab_job(crontab_job):
+def remove_jobs_with_comment(cron, comment_str):
     try:
-        crontab_job.write()
+        if MyGlobals.isVeryVerbose:
+            print('Jobs count before removing: {}'.format(len(cron)))
+        cron.remove_all(comment=comment_str)
+        if MyGlobals.isVeryVerbose:
+            print('Jobs count after removing: {}'.format(len(cron)))
         return True
     except BaseException as errorMsg:
-        print('Failed creating crontab job\nError:\n{}'.format(errorMsg) )
+        print('Failed to remove crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
         return False
 
 
-def prepare_crontab_job(user_to_use, time_str, command_str, comment_str='', is_every_reboot=False):
+def write_crontab_jobs(cron):
+    if MyGlobals.isVeryVerbose:
+        print('Writing crontab settings to the system')
     try:
-        cron = CronTab(user=user_to_use)
+        cron.write()
+        return True
+    except BaseException as errorMsg:
+        print('Failed creating crontab job\nError:\n{}'.format(errorMsg))
+        return False
+
+
+def connect_cron_for_user(user_name):
+    if MyGlobals.isVerbose:
+        print('Connecting to crontab of user: {}'.format(user_name))
+    return CronTab(user=user_name)
+
+
+def add_crontab_job(cron, user_to_use, time_str, command_str, comment_str='', is_every_reboot=False):
+    if MyGlobals.isVerbose:
+        print('Adding new crontab job:'
+              '\n - Command: {}'
+              '\n - Time: {}'
+              '\n - User: {}'.format(command_str, time_str, user_to_use))
+    try:
         crontab_job = cron.new(command=command_str, comment=comment_str)
         crontab_job.setall(time_str)
         if is_every_reboot:
             crontab_job.every_reboot()
-        return crontab_job
+
+        if MyGlobals.isVerbose:
+            print('Success adding new crontab job')
+        return True
     except BaseException as errorMsg:
-        print('Failed creating crontab job to run:\n - Command: {}'
-                                                 '\n - Time: {}'
-                                                 '\n - User: {}'
-                                                 '\nError:\n{}'.format(command_str, time_str, user_to_use, errorMsg))
-        return None
+        print('Failed adding new crontab job:'
+              '\n - Command: {}'
+              '\n - Time: {}'
+              '\n - User: {}'
+              '\nError:\n{}'.format(command_str, time_str, user_to_use, errorMsg))
+        return False
 
 
 def create_crontab_command():
