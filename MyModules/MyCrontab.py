@@ -24,8 +24,11 @@ def setup_script_as_crontab_job():
     is_every_reboot = MyGlobals.isEveryReboot
 
     crontab_job = prepare_crontab_job(user_to_use, time_str, command_str, comment_str, is_every_reboot)
+    if not crontab_job:
+        return False
     if not create_crontab_job(crontab_job):
         return False
+    return True
 
 
 def create_crontab_job(crontab_job):

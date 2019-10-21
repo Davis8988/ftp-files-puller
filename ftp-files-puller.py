@@ -30,7 +30,7 @@ def main():
     # Check if wants to setup a crontab job:
     if MyGlobals.isRunAsCronjob:
         if not MyCrontab.setup_script_as_crontab_job():
-            MyGlobals.terminate_program(1, msg='Failed to setup this script as a crontab job')
+            MyGlobals.terminate_program(1)
         print('Success setting-up script to run as a crontab job')
     # Or run this script once
     else:
