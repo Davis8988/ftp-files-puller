@@ -15,6 +15,12 @@ from MyModules import MyGlobals
 # │ │ │ │ │
 # * * * * *  command to execute
 
+def setup_script_as_crontab_job():
+    command_str = create_crontab_command()
+    crontab_time = MyGlobals.crontab_time
+    create_crontab_job()
+
+
 def create_crontab_job(user_to_use, time_str, command_str, comment_str='', is_every_reboot=False):
     try:
         cron = CronTab(user=user_to_use)

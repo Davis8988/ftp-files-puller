@@ -6,6 +6,7 @@ import sys
 import ntpath
 import re
 import getopt
+import getpass
 
 from pyfiglet import Figlet
 
@@ -35,7 +36,7 @@ isVerbose = False
 isVeryVerbose = False
 
 # Python-Crontab
-crontab_user = os.getenv('CRONTAB_USER', '')
+crontab_user = os.getenv('CRONTAB_USER', getpass.getuser())
 crontab_time = os.getenv('CRONTAB_TIME', '')
 crontab_comment = os.getenv('CRONTAB_COMMENT', '')
 isRunAsCronjob = False
@@ -166,11 +167,11 @@ def check_params():
 
     # If hashed - then needs a key or the passwords-encrypter.exe file path
     if isHashed and not (ftpEncryptKey or passwordEncrypterExe):
-        error_msg = "--hashed flag detected but missing encryption key [-k] OR password-encrypter.exe [-e] path"
+        error_msg = "--hashed flag detected but missing encryption key arg: [-k]  OR  password-encrypter.exe arg: [-e] path"
         terminate_program(1, error_msg)
 
-    if isRunAsCronjob and not (crontab_user or crontab_time):
-        error_msg = "--run_as_cronjob flag detected but missing --crontab_user= OR --crontab_time="
+    if isRunAsCronjob and not crontab_time:
+        error_msg = "--run_as_cronjob flag detected but missing arg --crontab_time= "
         terminate_program(1, error_msg)
 
     # Convert params types:
@@ -301,7 +302,11 @@ def read_command_line_args(argv):
             error_msg = "Error - unexpected arg: '{}'".format(arg)
             terminate_program(1, error_msg)
 
-        received_args += '{} {} '.format(opt, arg)
+        # Check if long arg with a value (e.g --ftp_addr=www.google.com)
+        if '--' in opt and arg:
+            received_args += '{}={} '.format(opt, arg)
+        else:
+            received_args += '{} {} '.format(opt, arg)
 
     return received_args
 

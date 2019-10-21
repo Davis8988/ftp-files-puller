@@ -8,6 +8,7 @@ from MyModules import MyPasswordDecipher
 from MyModules import MyCrontab
 
 
+
 # Configuration global vars can be found at MyModules/MyGlobals.py
 
 #  _____ _____ ____    ____        _ _
@@ -26,37 +27,36 @@ def main():
     if not MyGlobals.check_params():
         MyGlobals.terminate_program(1)
 
+    # Check if wants to setup a crontab job:
     if MyGlobals.isRunAsCronjob:
-        command_str = MyCrontab.create_crontab_command()
-        crontab_time = MyGlobals.crontab_time
-        MyCrontab.create_crontab_job()
+        if not MyCrontab.setup_script_as_crontab_job():
+            MyGlobals.terminate_program(1, msg='Failed to setup this script as a crontab job')
+        print('Success setting-up script to run as a crontab job')
+    # Or run this script once
+    else:
+        # Get connection to FTP server
+        ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
+        if ftp_con is None:
+            MyGlobals.terminate_program(1, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
 
-    # Get connection to FTP server
-    if MyGlobals.isVerbose:
-        print("Getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
-    ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
-    if ftp_con is None:
-        print("Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
-        MyGlobals.terminate_program(1)
+        # If password is hashed - attempt to decipher it
+        if MyGlobals.isHashed:
+            ftp_password = MyPasswordDecipher.decipherPasswordHash(MyGlobals.ftpPassword)
+            if ftp_password is None:
+                MyGlobals.terminate_program(1)
 
-    # If password is hashed - attempt to decipher it
-    if MyGlobals.isHashed:
-        ftp_password = MyPasswordDecipher.decipherPasswordHash(MyGlobals.ftpPassword)
-        if ftp_password is None:
+        # Attempt to login
+        if not MyFtpLib.login_to_ftp_server(ftp_con, MyGlobals.ftpUser, ftp_password):
             MyGlobals.terminate_program(1)
 
-    # Attempt to login
-    if not MyFtpLib.login_to_ftp_server(ftp_con, MyGlobals.ftpUser, ftp_password):
-        MyGlobals.terminate_program(1)
+        # Download src path:
+        download_result = MyFtpLib.download_path(ftp_con, MyGlobals.ftpSourcePath, MyGlobals.destPath)
 
-    # Download src path:
-    download_result = MyFtpLib.download_path(ftp_con, MyGlobals.ftpSourcePath, MyGlobals.destPath)
-
-    # Start downloading files:
-    if download_result:
-        MyGlobals.terminate_program(0, 'SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
-    else:
-        MyGlobals.terminate_program(1, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+        # Start downloading files:
+        if download_result:
+            MyGlobals.terminate_program(0, 'SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+        else:
+            MyGlobals.terminate_program(1, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
 
     print("Main Finished")
 
