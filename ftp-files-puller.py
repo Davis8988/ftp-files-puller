@@ -16,54 +16,67 @@ from MyModules import MyCrontab
 # |_|     |_| |_|     |_|    \__,_|_|_|\___|_|
 
 
-def main():
-    received_args = MyGlobals.read_command_line_args(sys.argv[1:])
-    print('FTP Puller - Started')
-    print('Command Line: {} {}\n'.format(sys.argv[0], received_args))
-
-    # Check that params are ok
-    if not MyGlobals.check_params():
-        MyGlobals.terminate_program(1)
-
-    # If wants to remove old/running crontab jobs:
-    if MyGlobals.isRemoveCronJobs:
-        removed_count = MyCrontab.remove_current_ftp_puller_crontab_jobs()
-        if removed_count is False:
-            MyGlobals.terminate_program(1)
-        print('Success removing {} crontab jobs'.format(removed_count))
-
-    # Check if wants to setup this script as a crontab job:
-    if MyGlobals.isRunAsCronjob:
-        if not MyCrontab.setup_script_as_crontab_job():
-            MyGlobals.terminate_program(1)
-        MyGlobals.terminate_program(0, 'Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
+def remove_old_crontab_jobs():
+    removed_count = MyCrontab.remove_current_ftp_puller_crontab_jobs()
+    if removed_count is False:
+        MyGlobals.terminate_program(2)
+    print('Success removing {} crontab jobs'.format(removed_count))
+    return
 
 
+def setup_new_crontab_job():
+    if not MyCrontab.setup_script_as_crontab_job():
+        MyGlobals.terminate_program(2)
+    MyGlobals.terminate_program(0,'Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
+    return
+
+
+def pull_files_dirs_from_ftp():
     # Get connection to FTP server
     ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
     if ftp_con is None:
-        MyGlobals.terminate_program(1, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr,
-                                                                                            MyGlobals.ftpPort))
+        MyGlobals.terminate_program(2, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr,MyGlobals.ftpPort))
 
     # If password is hashed - attempt to decipher it
     if MyGlobals.isHashed:
         ftp_password = MyPasswordDecipher.decipherPasswordHash(MyGlobals.ftpPassword)
         if ftp_password is None:
-            MyGlobals.terminate_program(1)
+            MyGlobals.terminate_program(2)
 
     # Attempt to login
     if not MyFtpLib.login_to_ftp_server(ftp_con, MyGlobals.ftpUser, ftp_password):
-        MyGlobals.terminate_program(1)
+        MyGlobals.terminate_program(2)
 
     # Download src path:
     download_result = MyFtpLib.download_path(ftp_con, MyGlobals.ftpSourcePath, MyGlobals.destPath)
 
     # Start downloading files:
     if download_result:
-        MyGlobals.terminate_program(0, 'SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+        MyGlobals.terminate_program(0, 'SUCCESS - Downloading: {} to: {}\nFTP Puller - Finished'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
     else:
-        MyGlobals.terminate_program(1, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath,
-                                                                                    MyGlobals.destPath))
+        MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}\nFTP Puller - Finished'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
+
+
+# -- Main function --
+def main():
+    received_args = MyGlobals.read_command_line_args(sys.argv[1:])
+    print('FTP Puller - Started')
+    print('Command Line: {} {}\n'.format(sys.argv[0], received_args))
+
+    if not MyGlobals.check_params():  # Check that params are ok
+        MyGlobals.terminate_program(1)
+
+    if MyGlobals.isRemoveCronJobs:  # If wants to remove old/running crontab jobs
+        remove_old_crontab_jobs()
+
+    if MyGlobals.isSetupAsCronjob and MyGlobals.receivedDownloadArgs:  # Check if wants to setup this script as a crontab job
+        setup_new_crontab_job()
+
+    elif MyGlobals.receivedDownloadArgs:  # Check if wants to run this script once
+        pull_files_dirs_from_ftp()
+
+    print('FTP Puller - Finished')
+
 
 if __name__ == '__main__':
     main()
