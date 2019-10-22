@@ -17,10 +17,9 @@ from MyModules import MyCrontab
 
 
 def remove_old_crontab_jobs():
-    removed_count = MyCrontab.remove_current_ftp_puller_crontab_jobs()
-    if removed_count is False:
+    removed_result = MyCrontab.remove_current_ftp_puller_crontab_jobs()
+    if removed_result is False:
         MyGlobals.terminate_program(2)
-    print('Success removing {} crontab jobs'.format(removed_count))
     return
 
 
@@ -54,7 +53,7 @@ def pull_files_dirs_from_ftp():
     if not download_result:
         MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
 
-    print('SUCCESS - Downloading: {} to: {}\nFTP Puller - Finished'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+    print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
     return
 
 
