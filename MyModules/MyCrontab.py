@@ -35,6 +35,21 @@ def remove_current_ftp_puller_crontab_jobs():
 
     return removed_count
 
+
+def print_current_ftp_puller_crontab_jobs():
+    comment_str = MyGlobals.crontab_comment
+    user_to_use = MyGlobals.crontab_user
+
+    cron = connect_cron_for_user(user_to_use)
+    if cron is None:
+        return False
+
+    if len(cron) == 0:
+        print('No crontab jobs found')
+        return True
+
+    return print_jobs_with_comment(cron, comment_str)
+
 def setup_script_as_crontab_job():
     command_str = create_crontab_command()
     comment_str = MyGlobals.crontab_comment
@@ -55,9 +70,26 @@ def setup_script_as_crontab_job():
     return True
 
 
+def print_jobs_with_comment(cron, comment_str):
+    if MyGlobals.isVerbose:
+        print("Printing all crontab jobs with comment: '{}'".format(comment_str))
+
+    try:
+        for job in cron:
+            print('{}\n'.format(job))
+
+        if MyGlobals.isVeryVerbose:
+            print('Finished printing all crontab jobs with comment: {}')
+
+        return True
+    except BaseException as errorMsg:
+        print('Failed to print all crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
+        return False
+
+
 def remove_jobs_with_comment(cron, comment_str):
     if MyGlobals.isVerbose:
-        print("Removing crontab jobs with comment: '{}'".format(comment_str))
+        print("Removing all crontab jobs with comment: '{}'".format(comment_str))
 
     before_jobs_count = len(cron)
     try:
@@ -70,7 +102,7 @@ def remove_jobs_with_comment(cron, comment_str):
         total_jobs_removed = before_jobs_count - after_jobs_count
         return total_jobs_removed
     except BaseException as errorMsg:
-        print('Failed to remove crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
+        print('Failed to remove all crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
         return False
 
 

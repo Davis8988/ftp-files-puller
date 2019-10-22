@@ -50,12 +50,19 @@ def pull_files_dirs_from_ftp():
     # Download src path:
     download_result = MyFtpLib.download_path(ftp_con, MyGlobals.ftpSourcePath, MyGlobals.destPath)
 
-    # Start downloading files:
-    if download_result:
-        MyGlobals.terminate_program(0, 'SUCCESS - Downloading: {} to: {}\nFTP Puller - Finished'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
-    else:
-        MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}\nFTP Puller - Finished'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
+    # Check if successful
+    if not download_result:
+        MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
 
+    print('SUCCESS - Downloading: {} to: {}\nFTP Puller - Finished'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+    return
+
+
+def print_crontab_jobs_with_comment():
+    print_result = MyCrontab.print_current_ftp_puller_crontab_jobs()
+    if print_result is False:
+        MyGlobals.terminate_program(2)
+    return
 
 # -- Main function --
 def main():
@@ -66,6 +73,9 @@ def main():
     if not MyGlobals.check_params():  # Check that params are ok
         MyGlobals.terminate_program(1)
 
+    if MyGlobals.isPrintCronJobs:
+        print_crontab_jobs_with_comment()
+
     if MyGlobals.isRemoveCronJobs:  # If wants to remove old/running crontab jobs
         remove_old_crontab_jobs()
 
@@ -73,9 +83,9 @@ def main():
         setup_new_crontab_job()
 
     elif MyGlobals.receivedDownloadArgs:  # Check if wants to run this script once
-        pull_files_dirs_from_ftp()
+        pull_files_dirs_from_ftp()  # Start downloading
 
-    print('FTP Puller - Finished')
+    MyGlobals.terminate_program(0, 'FTP Puller - Finished')
 
 
 if __name__ == '__main__':

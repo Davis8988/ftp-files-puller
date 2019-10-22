@@ -44,6 +44,7 @@ crontab_comment = os.getenv('CRONTAB_COMMENT', crontabJobComment_Default)
 isSetupAsCronjob = False
 isEveryReboot = False
 isRemoveCronJobs = False
+isPrintCronJobs = False
 
 # For check if got args for downloading
 receivedDownloadArgs = False
@@ -73,6 +74,7 @@ def read_command_line_args(argv):
                                                                    "setup_as_crontab_job",
                                                                    "every_reboot",
                                                                    "remove_crontab_jobs",
+                                                                   "print_crontab_jobs",
                                                                    "help"])
     except getopt.GetoptError as error_msg:
         terminate_program(1, "\nError preparing 'getopt' object:\n" + str(error_msg))
@@ -99,6 +101,7 @@ def read_command_line_args(argv):
     global isSetupAsCronjob
     global isEveryReboot
     global isRemoveCronJobs
+    global isPrintCronJobs
 
     received_args = ''
 
@@ -152,6 +155,8 @@ def read_command_line_args(argv):
             isEveryReboot = True
         elif opt in ["--remove_crontab_jobs"]:
             isRemoveCronJobs = True
+        elif opt in ["--print_crontab_jobs"]:
+            isPrintCronJobs = True
         else:
             error_msg = "Error - unexpected arg: '{}'".format(arg)
             terminate_program(1, error_msg)
@@ -181,6 +186,7 @@ def check_params():
     global crontab_comment
     global isSetupAsCronjob
     global isRemoveCronJobs
+    global isPrintCronJobs
     global receivedDownloadArgs
 
     if isVerbose:
@@ -189,7 +195,7 @@ def check_params():
     # If at least one is not empty - then True
     receivedDownloadArgs = bool(ftpAddr or ftpUser or ftpPassword or ftpSourcePath or destPath)
 
-    # If not received download args
+    # Check what user wants to do and validate params accordingly
     if receivedDownloadArgs:
         if not (ftpAddr and ftpUser and ftpPassword and ftpSourcePath and destPath):  # Needs to provide all the downloading args
             error_msg = "Please provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path"
@@ -224,7 +230,11 @@ def check_params():
             print('Failed validating params.\nError:\n{}'.format(errorMsg))
             return False
 
-    elif not isRemoveCronJobs:  # If didn't get download args AND didn't get remove-crontab-job arg - then nothing to do. Missing args.
+    elif isRemoveCronJobs:
+        pass
+    elif isPrintCronJobs:
+        pass
+    else:  # If didn't receive download args AND didn't receive remove-crontab-job arg AND didn't receive print-crontab-jobs arg  -  then nothing to do. Missing args.
         return False
 
     if isVeryVerbose:
@@ -255,7 +265,8 @@ def remove_trailing_slash(path):
 
 
 def terminate_program(exit_code, msg=''):
-    print(msg)
+    if msg:
+        print(msg)
     if exit_code == 1:
         print('Aborting with error..\n{}'.format(get_help_string()))
     elif exit_code == 2:
@@ -319,11 +330,12 @@ def get_help_string():
 
     help_str += "Crontab:\n"
     help_str += " --setup_as_crontab_job   : Setup script execution as a crontab job.\n"
-    help_str += " --crontab_user=          : Crontab job user.\n"
+    help_str += " --crontab_user=          : Crontab job user. Default is current logged on user.\n"
     help_str += " --crontab_time=          : Crontab time.\n"
     help_str += " --crontab_comment=       : Crontab job comment. Default is '{}'.\n".format(crontabJobComment_Default)
-    help_str += " --remove_crontab_jobs    : Remove all crontab jobs with comment provided by '--crontab_comment='. Used for cancelling old/running jobs.\n"
-    help_str += " --every_reboot           : Enable job start on every reboot.\n\n"
+    help_str += " --every_reboot           : Enable job start on every reboot.\n"
+    help_str += " --print_crontab_jobs     : Print all crontab jobs with comment provided by '--crontab_comment=' for provided user.\n"
+    help_str += " --remove_crontab_jobs    : Remove all crontab jobs with comment provided by '--crontab_comment=' for provided user. Used for cancelling old/running jobs.\n\n"
 
     help_str += "Help:\n"
     help_str += " -h, --help               : print this help message and exit\n\n"
