@@ -27,7 +27,6 @@ def remove_current_ftp_puller_crontab_jobs():
     if cron is None:
         return False
 
-    removed_count = 0
     if len(cron) == 0:
         print('No crontab jobs found')
         return True
@@ -59,6 +58,7 @@ def print_current_ftp_puller_crontab_jobs():
         return True
 
     return print_jobs_with_comment(cron, comment_str)
+
 
 def setup_script_as_crontab_job():
     command_str = create_crontab_command()

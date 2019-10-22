@@ -16,6 +16,7 @@ class FTPPathType:
 
 ftp_errors_without_timeouts_errors = tuple([x for x in ftplib.all_errors if x is not socket.error and x is not OSError])
 
+
 # Wrappers
 def with_retry_count_decorate(action_description):
     def run_func_and_rerty_on_failure(func):
@@ -79,6 +80,7 @@ def get_ftp_connection(ftp_addr, ftp_port, ftp_timeout):
         print("Success - got connection to: {}:{}".format(ftp_addr, ftp_port))
     return ftp_obj_result
 
+
 @with_retry_count_decorate(action_description='prepare an FTP object')
 def _get_ftp_connection(ftp_addr, ftp_port, ftp_timeout):
     ftp_obj = ftplib.FTP(timeout=ftp_timeout)  # prepare FTP object with a timeout setting
@@ -96,6 +98,7 @@ def login_to_ftp_server(ftp_con, ftp_user, ftp_pass):
         print("Success - logged in to ftp server")
     return login_result
 
+
 @with_retry_count_decorate(action_description='login to FTP server')
 def _login_to_ftp_server(ftp_con, ftp_user, ftp_pass):
     try:
@@ -104,6 +107,7 @@ def _login_to_ftp_server(ftp_con, ftp_user, ftp_pass):
     except ftp_errors_without_timeouts_errors as errorMsg:
         print('Failed to login to {} as user: {}\nError:\n'.format(ftp_con.host, ftp_user, errorMsg))
         return None
+
 
 @with_retry_count_decorate(action_description='get current ftp dir')
 def ftp_get_pwd(ftp_con):
@@ -155,7 +159,6 @@ def ftp_check_path_type(ftp_con, ftp_path_to_check):
             return FTPPathType.FILE
 
     return FTPPathType.INVALID
-
 
 
 @with_retry_count_decorate(action_description='check if ftp-dir exists')
@@ -215,6 +218,7 @@ def ftp_delete_file(ftp_con, file_path):
         print('Success - deleted ftp file: {}'.format(file_path))
     return True
 
+
 def download_ftp_file(ftp_con, file_name, dest_path, create_dirs=False):
     if MyGlobals.isVerbose:
         cur_loc = ftp_get_pwd(ftp_con)
@@ -229,14 +233,15 @@ def download_ftp_file(ftp_con, file_name, dest_path, create_dirs=False):
     if not change_local_dir(dest_path):
         return False
 
-    download_result = _download_ftp_file(ftp_con, file_name, dest_path, create_dirs=False)
+    download_result = _download_ftp_file(ftp_con, file_name, dest_path)
     if download_result and MyGlobals.isRemoveSrc:
         return ftp_delete_file(ftp_con, file_name)
 
     return download_result
 
+
 @with_retry_count_decorate(action_description='download a file from ftp')
-def _download_ftp_file(ftp_con, file, dest, create_dirs=False):
+def _download_ftp_file(ftp_con, file, dest):
     opened_file = open(os.path.join(dest, file), "wb")
     ftp_con.retrbinary("RETR " + file, opened_file.write)
     opened_file.close()
@@ -261,6 +266,7 @@ def get_file_list(ftp_con):
             print("Success - got file list of: {}".format(cur_loc))
 
     return file_list
+
 
 @with_retry_count_decorate(action_description='get file list from ftp')
 def _get_file_list(ftp_con):

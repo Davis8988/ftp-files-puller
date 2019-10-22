@@ -7,6 +7,7 @@ from MyModules import MyFtpLib
 from MyModules import MyPasswordDecipher
 from MyModules import MyCrontab
 
+
 # Configuration global vars can be found at MyModules/MyGlobals.py
 
 #  _____ _____ ____    ____        _ _
@@ -26,7 +27,8 @@ def remove_old_crontab_jobs():
 def setup_new_crontab_job():
     if not MyCrontab.setup_script_as_crontab_job():
         MyGlobals.terminate_program(2)
-    MyGlobals.terminate_program(0,'Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
+    MyGlobals.terminate_program(0,
+                                'Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
     return
 
 
@@ -34,11 +36,11 @@ def pull_files_dirs_from_ftp():
     # Get connection to FTP server
     ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
     if ftp_con is None:
-        MyGlobals.terminate_program(2, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr,MyGlobals.ftpPort))
+        MyGlobals.terminate_program(2, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
 
     # If password is hashed - attempt to decipher it
     if MyGlobals.isHashed:
-        ftp_password = MyPasswordDecipher.decipherPasswordHash(MyGlobals.ftpPassword)
+        ftp_password = MyPasswordDecipher.decipher_password_hash(MyGlobals.ftpPassword)
         if ftp_password is None:
             MyGlobals.terminate_program(2)
 
@@ -51,7 +53,7 @@ def pull_files_dirs_from_ftp():
 
     # Check if successful
     if not download_result:
-        MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath,MyGlobals.destPath))
+        MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
 
     print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
     return
@@ -62,6 +64,7 @@ def print_crontab_jobs_with_comment():
     if print_result is False:
         MyGlobals.terminate_program(2)
     return
+
 
 # -- Main function --
 def main():
