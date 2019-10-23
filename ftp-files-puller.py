@@ -38,9 +38,10 @@ def pull_files_dirs_from_ftp():
     if ftp_con is None:
         MyGlobals.terminate_program(2, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
 
+    ftp_password = MyGlobals.ftpPassword
     # If password is hashed - attempt to decipher it
     if MyGlobals.isHashed:
-        ftp_password = MyPasswordDecipher.decipher_password_hash(MyGlobals.ftpPassword)
+        ftp_password = MyPasswordDecipher.decipher_password_hash(ftp_password)
         if ftp_password is None:
             MyGlobals.terminate_program(2)
 

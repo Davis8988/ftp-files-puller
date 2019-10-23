@@ -5,14 +5,16 @@ services:
   ftp-puller:
     image: davis8988/ftp-puller:python-3.7.2-slim
     container_name: ftp-puller
+    user: 'root'
     environment:
       - FTP_ADDRESS=ftp.elbitsystems.com
       - FTP_USER=dp99662
       - FTP_PASSWORD=QAqa3073
       - FTP_SOURCE_PATH=/David/apt
-      - FTP_DEST_PATH=/home/user
+      - FTP_DEST_PATH=/home/ftp
     ports:
       - 21:21
-    entrypoint: ["/usr/local/bin/python", "/home/user/ftp-files-puller.py", "--very_verbose"]
+    # entrypoint: ["/usr/local/bin/python", "/home/ftp/ftp-files-puller.py", "--very_verbose", "--print_crontab_jobs", "--remove_crontab_jobs", "--setup_as_crontab_job", "--crontab_time=* * * * *", "&&", "sleep", "5", "&&", "tail", "/var/log/cron", "-f"]
+    command: bash -c "/usr/local/bin/python /home/ftp/ftp-files-puller.py --very_verbose --print_crontab_jobs --remove_crontab_jobs --setup_as_crontab_job --crontab_time='* * * * *' && echo Sleeping for 70 seconds && sleep 70 && tail /var/log/cron -f"
 
 
