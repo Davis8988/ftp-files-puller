@@ -1,0 +1,34 @@
+# For starting ftp-puller
+version: '2'
+
+services:
+  ftp-puller:
+    image: davis8988/ftp-puller:python-3.7.2-slim
+    container_name: ftp-puller
+    user: 'root'
+    # volumes:
+      # - /opt/sources/ftp-file-puller/crontab/ftp-puller-crontab:/etc/cron.d/ftp-puller/ftp-puller-crontab
+    environment:
+      - FTP_ADDRESS=my.ftp.server.com
+      - FTP_USER=myUser
+      - FTP_PASSWORD=myPass123
+      - FTP_SOURCE_PATH=/devices/Scripts/Stream
+      - FTP_DEST_PATH=/home/ftp
+      - PULLER_JOB_CRONTAB_FILE=/etc/cron.d/ftp-puller/ftp-puller-crontab
+      - CRON_TIME=* * * * *
+      - EXTRA_ARGS=--very_verbose
+    ports:
+      - 21:21
+      - 22:22
+    command: bash -c '
+                      echo running sed -i "s|1 1 1 1 1|$${CRON_TIME}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      sed -i "s|1 1 1 1 1|$${CRON_TIME}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      echo running sed -i "s|EXTRA_ARGS|$${EXTRA_ARGS}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      sed -i "s|EXTRA_ARGS|$${EXTRA_ARGS}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      crontab "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      unset CRON_TIME &&
+                      env >> /etc/environment &&
+                      cron && tail -f /var/log/cron.log
+                    '
+
+
