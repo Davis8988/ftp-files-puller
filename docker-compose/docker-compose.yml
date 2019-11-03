@@ -6,15 +6,31 @@ services:
     image: davis8988/ftp-puller:python-3.7.2-slim
     container_name: ftp-puller
     user: 'root'
+    # volumes:
+      # - /opt/sources/ftp-file-puller/crontab/ftp-puller-crontab:/etc/cron.d/ftp-puller/ftp-puller-crontab
     environment:
       - FTP_ADDRESS=ftp.elbitsystems.com
       - FTP_USER=dp99662
       - FTP_PASSWORD=QAqa3073
-      - FTP_SOURCE_PATH=/David/apt
+      - FTP_SOURCE_PATH=/Yokneam/Scripts/Stream
       - FTP_DEST_PATH=/home/ftp
+      - PULLER_JOB_CRONTAB_FILE=/etc/cron.d/ftp-puller/ftp-puller-crontab
+      - CRON_TIME=* * * * *
+      - EXTRA_ARGS=--very_verbose
     ports:
       - 21:21
-    # entrypoint: ["/usr/local/bin/python", "/home/ftp/ftp-files-puller.py", "--very_verbose", "--print_crontab_jobs", "--remove_crontab_jobs", "--setup_as_crontab_job", "--crontab_time=* * * * *", "&&", "sleep", "5", "&&", "tail", "/var/log/cron", "-f"]
-    command: bash -c "/usr/local/bin/python /home/ftp/ftp-files-puller.py --very_verbose --print_crontab_jobs --remove_crontab_jobs --setup_as_crontab_job --crontab_time='* * * * *' && echo Sleeping for 70 seconds && sleep 70 && tail /var/log/cron -f"
+    # command: bash -c 'cron && echo sleep 70 && sleep 70 && echo done sleeping && sed -i "s/CRON_TIME/$${CRON_TIME}/g" "$${PULLER_JOB_CRONTAB_FILE}" && sed -i "s/EXTRA_ARGS/$${EXTRA_ARGS}/g" "$${PULLER_JOB_CRONTAB_FILE}" && tail -f /var/log/cron.log'
+    # command: bash -c 'echo sleep 5 && sleep 5 && cron && tail -f /var/log/cron.log'
+    # command: bash -c 'cron && tail -f /var/log/cron.log'
+    command: bash -c '
+                      echo running sed -i "s|1 1 1 1 1|$${CRON_TIME}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      sed -i "s|1 1 1 1 1|$${CRON_TIME}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      echo running sed -i "s|EXTRA_ARGS|$${EXTRA_ARGS}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      sed -i "s|EXTRA_ARGS|$${EXTRA_ARGS}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      crontab "$${PULLER_JOB_CRONTAB_FILE}" && 
+                      unset CRON_TIME &&
+                      env >> /etc/environment &&
+                      cron && tail -f /var/log/cron.log
+                    '
 
 

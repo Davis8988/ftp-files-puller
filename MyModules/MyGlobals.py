@@ -198,18 +198,18 @@ def check_params():
     # Check what user wants to do and validate params accordingly
     if receivedDownloadArgs:
         if not (ftpAddr and ftpUser and ftpPassword and ftpSourcePath and destPath):  # Needs to provide all the downloading args
-            error_msg = "Please provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path"
-            terminate_program(1, error_msg)
+            print("Please provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path")
+            return False
 
         # If provided hashed password - then needs to provide a key or the passwords-encrypter.exe application file path
         if isHashed and not (ftpEncryptKey or passwordEncrypterExe):
-            error_msg = "--hashed flag detected but missing encryption key arg: [-k]  OR  password-encrypter.exe arg: [-e] path"
-            terminate_program(1, error_msg)
+            print("--hashed flag detected but missing encryption key arg: [-k]  OR  password-encrypter.exe arg: [-e] path")
+            return False
 
         # If wants to setup a crontab job - then needs to provide crontab time arg too
         if isSetupAsCronjob and not crontab_time:
-            error_msg = "--setup_as_crontab_job flag detected but missing arg --crontab_time= "
-            terminate_program(1, error_msg)
+            print("--setup_as_crontab_job flag detected but missing arg --crontab_time= ")
+            return False
 
         # Convert params types:
         try:
@@ -235,6 +235,7 @@ def check_params():
     elif isPrintCronJobs:
         pass
     else:  # If didn't receive download args AND didn't receive remove-crontab-job arg AND didn't receive print-crontab-jobs arg  -  then nothing to do. Missing args.
+        print("No args were given, and no env vars set.\nPlease provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path")
         return False
 
     if isVeryVerbose:
