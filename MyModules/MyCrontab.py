@@ -42,6 +42,41 @@ def remove_current_ftp_puller_crontab_jobs():
     return True
 
 
+def execute_current_ftp_puller_crontab_jobs():
+    comment_str = MyGlobals.crontab_comment
+    user_to_use = MyGlobals.crontab_user
+
+    if MyGlobals.isVerbose:
+        print("Executing all crontab jobs with comment: '{}' for user: '{}'".format(comment_str, user_to_use))
+
+    cron = connect_cron_for_user(user_to_use)
+    if cron is None:
+        return False
+
+    jobs_iter = cron.find_comment(comment_str)
+    if jobs_iter is None:
+        return False
+
+    if len(jobs_iter) == 0:
+        print("No crontab jobs with comment: '{}' were found".format(comment_str))
+        return True
+
+    if MyGlobals.isVerbose:
+        print("Found {} jobs - Executing them now..".format(len(jobs_iter), comment_str))
+
+    for job in jobs_iter:
+        try:
+            print('  Running job: {}'.format(job))
+            job_standard_output = job.run()
+            print('  Output:\n{}\n'.format(job_standard_output))
+        except BaseException as errorMsg:
+            print('\nFailed executing job: {}\nError:\n{}'.format(job, errorMsg))
+            return False
+
+    print('Success executing {} crontab jobs'.format(len(jobs_iter)))
+    return True
+
+
 def print_current_ftp_puller_crontab_jobs():
     comment_str = MyGlobals.crontab_comment
     user_to_use = MyGlobals.crontab_user
@@ -67,6 +102,9 @@ def setup_script_as_crontab_job():
     user_to_use = MyGlobals.crontab_user
     is_every_reboot = MyGlobals.isEveryReboot
 
+    if MyGlobals.isVerbose:
+        print('Setting-up ftp-puller script as a crontab job:\n{}\n'.format(command_str))
+
     cron = connect_cron_for_user(user_to_use)
     if cron is None:
         return False
@@ -77,11 +115,28 @@ def setup_script_as_crontab_job():
     if not write_crontab_jobs(cron):
         return False
 
+    print('Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
+    return True
+
+
+def start_crontab_scheduler():
+    print('Running crontab scheduler for user: {}'.format(MyGlobals.crontab_user))
+    user_to_use = MyGlobals.crontab_user
+    cron = CronTab(user=user_to_use)
+
+    try:
+        for result in cron.run_scheduler():
+            print('Scheduler Run Result:\n{}\n'.format(result))
+    except KeyboardInterrupt:
+        print('Stopping crontab scheduler execution..')
+    except BaseException as errorMsg:
+        print('\nFailed executing crontab scheduler\nError:\n{}'.format(errorMsg))
+        return False
+
     return True
 
 
 def print_jobs_with_comment(cron, comment_str):
-
     try:
         for job in cron:
             print('{}\n'.format(job))
@@ -91,12 +146,11 @@ def print_jobs_with_comment(cron, comment_str):
 
         return True
     except BaseException as errorMsg:
-        print('Failed to print all crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
+        print('\nFailed to print all crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
         return False
 
 
 def remove_jobs_with_comment(cron, comment_str):
-
     before_jobs_count = len(cron)
     try:
         if MyGlobals.isVeryVerbose:
@@ -108,7 +162,7 @@ def remove_jobs_with_comment(cron, comment_str):
         total_jobs_removed = before_jobs_count - after_jobs_count
         return total_jobs_removed
     except BaseException as errorMsg:
-        print('Failed to remove all crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
+        print('\nFailed to remove all crontab jobs with comment: {}\nError:\n{}'.format(comment_str, errorMsg))
         return False
 
 
@@ -119,7 +173,7 @@ def write_crontab_jobs(cron):
         cron.write()
         return True
     except BaseException as errorMsg:
-        print('Failed creating crontab job\nError:\n{}'.format(errorMsg))
+        print('\nFailed creating crontab job\nError:\n{}'.format(errorMsg))
         return False
 
 
@@ -129,7 +183,7 @@ def connect_cron_for_user(user_to_use):
     try:
         return CronTab(user=user_to_use)
     except BaseException as errorMsg:
-        print('Failed to connect to crontab for user: {}\nError:\n{}'.format(user_to_use, errorMsg))
+        print('\nFailed to connect to crontab for user: {}\nError:\n{}'.format(user_to_use, errorMsg))
         return None
 
 
@@ -149,7 +203,7 @@ def add_crontab_job(cron, user_to_use, time_str, command_str, comment_str='', is
             print('Success adding new crontab job')
         return True
     except BaseException as errorMsg:
-        print('Failed adding new crontab job:'
+        print('\nFailed adding new crontab job:'
               '\n - Command: {}'
               '\n - Time: {}'
               '\n - User: {}'

@@ -15,7 +15,7 @@ def get_password_from_password_encrypter_exe(password_encrypter_exe, password_ha
     try:
         result = subprocess.run("{} -i {} -d -s -r".format(password_encrypter_exe, password_hash), capture_output=True)
     except BaseException as errorMsg:
-        print("Failed excuting subprocess of encrypter-exe: {}\nto decipher password from given hash: {}\nError:\n{}".format(password_encrypter_exe, password_hash, errorMsg))
+        print("\nFailed excuting subprocess of encrypter-exe: {}\nto decipher password from given hash: {}\nError:\n{}".format(password_encrypter_exe, password_hash, errorMsg))
         return None
     if not result.returncode == 0:
         return None
@@ -42,7 +42,7 @@ def decrypt_password(password_to_decrypt, key):
             print("Success - deciphered password hash")
         return plain_text
     except BaseException as errorMsg:
-        print("Failed deciphering password hash\nError:\n{}".format(errorMsg))
+        print("\nFailed deciphering password hash\nError:\n{}".format(errorMsg))
         return None
 
 

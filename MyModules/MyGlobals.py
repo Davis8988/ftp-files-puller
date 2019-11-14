@@ -6,7 +6,6 @@ import sys
 import ntpath
 import re
 import getopt
-import getpass
 
 from pyfiglet import Figlet
 
@@ -38,13 +37,14 @@ isVerbose = False
 isVeryVerbose = False
 
 # Python-Crontab
-crontab_user = os.getenv('CRONTAB_USER', getpass.getuser())
+crontab_user = os.getenv('CRONTAB_USER', True)  # Use 'True' for current user as default
 crontab_time = os.getenv('CRONTAB_TIME', '')
 crontab_comment = os.getenv('CRONTAB_COMMENT', crontabJobComment_Default)
 isSetupAsCronjob = False
 isEveryReboot = False
 isRemoveCronJobs = False
 isPrintCronJobs = False
+isTestJobsNow = False
 
 # For check if got args for downloading
 receivedDownloadArgs = False
@@ -75,6 +75,7 @@ def read_command_line_args(argv):
                                                                    "every_reboot",
                                                                    "remove_crontab_jobs",
                                                                    "print_crontab_jobs",
+                                                                   "test_jobs_now",
                                                                    "help"])
     except getopt.GetoptError as error_msg:
         terminate_program(1, "\nError preparing 'getopt' object:\n" + str(error_msg))
@@ -102,6 +103,7 @@ def read_command_line_args(argv):
     global isEveryReboot
     global isRemoveCronJobs
     global isPrintCronJobs
+    global isTestJobsNow
 
     received_args = ''
 
@@ -157,6 +159,8 @@ def read_command_line_args(argv):
             isRemoveCronJobs = True
         elif opt in ["--print_crontab_jobs"]:
             isPrintCronJobs = True
+        elif opt in ["--test_jobs_now"]:
+            isTestJobsNow = True
         else:
             error_msg = "Error - unexpected arg: '{}'".format(arg)
             terminate_program(1, error_msg)
@@ -187,6 +191,7 @@ def check_params():
     global isSetupAsCronjob
     global isRemoveCronJobs
     global isPrintCronJobs
+    global isTestJobsNow
     global receivedDownloadArgs
 
     if isVerbose:
@@ -227,12 +232,11 @@ def check_params():
             crontab_time = str(crontab_time)
             crontab_comment = str(crontab_comment)
         except BaseException as errorMsg:
-            print('Failed validating params.\nError:\n{}'.format(errorMsg))
+            print('\nFailed validating params.\nError:\n{}'.format(errorMsg))
             return False
 
-    elif isRemoveCronJobs:
-        pass
-    elif isPrintCronJobs:
+    # If wants to run a helper command - then no need for extra params
+    elif isRemoveCronJobs or isPrintCronJobs or isTestJobsNow:
         pass
     else:  # If didn't receive download args AND didn't receive remove-crontab-job arg AND didn't receive print-crontab-jobs arg  -  then nothing to do. Missing args.
         print("No args were given, and no env vars set.\nPlease provide the following:\n-a ftp-address -u user -p pass -s src path -d dest path")
@@ -255,7 +259,7 @@ def sleep_for_a_while(sleep_sec):
         time.sleep(sleep_sec)
         return True
     except BaseException as errorMsg:
-        print('Failed sleeping for {} seconds\nError:\n{}'.format(sleep_sec, errorMsg))
+        print('\nFailed sleeping for {} seconds\nError:\n{}'.format(sleep_sec, errorMsg))
         return False
 
 
@@ -283,7 +287,7 @@ def mkdir_p(path):
         if errorMsg.errno == errno.EEXIST and os.path.isdir(path):
             return True
         else:
-            print('Failed creating dir: {}\nError:\n{}'.format(path, errorMsg))
+            print('\nFailed creating dir: {}\nError:\n{}'.format(path, errorMsg))
             return None
 
 

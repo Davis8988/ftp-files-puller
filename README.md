@@ -80,3 +80,6 @@ or pull existing image from dockerhub:
 ## Run container
 ### Using env file:
 1. Create env file: 
+2. Run single time:
+```docker run --env-file ./env.list davis8988/ftp-puller:python-3.7.2-slim python /root/ftp-files-puller.py```
+

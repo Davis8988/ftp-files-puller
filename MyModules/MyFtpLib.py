@@ -35,14 +35,14 @@ def with_retry_count_decorate(action_description):
                     error_msg_str = str(errorMsg).lower()
                     timeout_str = 'timed out'
                     if timeout_str not in error_msg_str:
-                        print('Failed to {}.\nError:\n{}'.format(action_description, errorMsg))
+                        print('\nFailed to {}.\nError:\n{}'.format(action_description, errorMsg))
                         return None
                     print('Timeout occurred while attempting to {}. Retry count left: {}/{}'.format(action_description,
                                                                                                     retry_count,
                                                                                                     MyGlobals.ftpRetriesCount))
                     retry_count -= 1
                 except BaseException as errorMsg:
-                    print("Failed to {}.\nError:\n{}".format(action_description, errorMsg))
+                    print("\nFailed to {}.\nError:\n{}".format(action_description, errorMsg))
                     return None
                 MyGlobals.sleep_for_a_while(MyGlobals.sleepForBetweenActions_Default)
 
@@ -105,7 +105,7 @@ def _login_to_ftp_server(ftp_con, ftp_user, ftp_pass):
         ftp_con.login(ftp_user, ftp_pass)
         return True
     except ftp_errors_without_timeouts_errors as errorMsg:
-        print('Failed to login to {} as user: {}\nError:\n'.format(ftp_con.host, ftp_user, errorMsg))
+        print('\nFailed to login to {} as user: {}\nError:\n'.format(ftp_con.host, ftp_user, errorMsg))
         return None
 
 
@@ -114,7 +114,7 @@ def ftp_get_pwd(ftp_con):
     try:
         return ftp_con.pwd()
     except ftp_errors_without_timeouts_errors as errorMsg:
-        print('Failed getting current ftp dir\nError:\n{}'.format(errorMsg))
+        print('\nFailed getting current ftp dir\nError:\n{}'.format(errorMsg))
         return None
 
 
@@ -273,7 +273,7 @@ def _get_file_list(ftp_con):
     try:
         return ftp_con.nlst()
     except ftp_errors_without_timeouts_errors as errorMsg:
-        print('Failed getting file list\nError:\n{}'.format(errorMsg))
+        print('\nFailed getting file list\nError:\n{}'.format(errorMsg))
         return None
 
 
@@ -289,7 +289,7 @@ def _change_ftp_dir(ftp_con, dir_path):
         ftp_con.cwd(dir_path)
         return True
     except ftp_errors_without_timeouts_errors as errorMsg:
-        print('Failed changing ftp-dir to {}\nError:\n{}'.format(dir_path, errorMsg))
+        print('\nFailed changing ftp-dir to {}\nError:\n{}'.format(dir_path, errorMsg))
         return None
 
 
@@ -332,7 +332,7 @@ def _download_ftp_dir(ftp_con, ftp_src, dest):
                 print("Checking if {} is a directory".format(target_path))
             is_dir = ftp_check_is_dir(ftp_con, target_path)
             if is_dir is None:
-                print('Failed checking if {} is a directory'.format(target_path))
+                print('\nFailed checking if {} is a directory'.format(target_path))
                 return False
             elif is_dir:
                 if not change_ftp_dir(ftp_con, target_path):

@@ -24,11 +24,23 @@ def remove_old_crontab_jobs():
     return
 
 
+def execute_crontab_jobs_now():
+    execute_result = MyCrontab.execute_current_ftp_puller_crontab_jobs()
+    if execute_result is False:
+        MyGlobals.terminate_program(2)
+    return
+
+
 def setup_new_crontab_job():
     if not MyCrontab.setup_script_as_crontab_job():
         MyGlobals.terminate_program(2)
-    MyGlobals.terminate_program(0,
-                                'Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
+    return
+
+
+def start_crontab_scheduler():
+    if not MyCrontab.start_crontab_scheduler():
+        MyGlobals.terminate_program(2)
+    MyGlobals.terminate_program(0, 'Finished running crontab scheduler for user: {}'.format(MyGlobals.crontab_user))
     return
 
 
@@ -36,7 +48,7 @@ def pull_files_dirs_from_ftp():
     # Get connection to FTP server
     ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
     if ftp_con is None:
-        MyGlobals.terminate_program(2, msg="Failed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
+        MyGlobals.terminate_program(2, msg="\nFailed getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
 
     ftp_password = MyGlobals.ftpPassword
     # If password is hashed - attempt to decipher it
@@ -54,7 +66,7 @@ def pull_files_dirs_from_ftp():
 
     # Check if successful
     if not download_result:
-        MyGlobals.terminate_program(2, 'FAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+        MyGlobals.terminate_program(2, '\nFAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
 
     print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
     return
@@ -79,12 +91,15 @@ def main():
     if MyGlobals.isPrintCronJobs:
         print_crontab_jobs_with_comment()
 
+    if MyGlobals.isTestJobsNow:  # If wants to test crontab jobs - execute them now
+        execute_crontab_jobs_now()
+
     if MyGlobals.isRemoveCronJobs:  # If wants to remove old/running crontab jobs
         remove_old_crontab_jobs()
 
     if MyGlobals.isSetupAsCronjob and MyGlobals.receivedDownloadArgs:  # Check if wants to setup this script as a crontab job
         setup_new_crontab_job()
-
+        start_crontab_scheduler()
     elif MyGlobals.receivedDownloadArgs:  # Check if wants to run this script once
         pull_files_dirs_from_ftp()  # Start downloading
 
