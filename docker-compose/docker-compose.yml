@@ -11,26 +11,15 @@ services:
     environment:
       - FTP_ADDRESS=ftp.elbitsystems.com
       - FTP_USER=dp99662
-      - FTP_PASSWORD=QAqa3073
+      - FTP_PASSWORD=gAAAAABdg4_xDNvtquLIZ3wVy1UyzmJ7-1XbYh9qDJ6WqngKo78mdSnvNyYX-68nsWSmzT7Y6Pu03_PZgbzEmuLcdeqFedQ3nA==
       - FTP_SOURCE_PATH=/Yokneam/Scripts/Stream
       - FTP_DEST_PATH=/home/ftp
-      - PULLER_JOB_CRONTAB_FILE=/etc/cron.d/ftp-puller/ftp-puller-crontab
-      - CRON_TIME=* * * * *
-      - EXTRA_ARGS=--very_verbose
+      - EXTRA_ARGS=--hashed --very_verbose --setup_as_crontab_job --crontab_time=* * * * *
     ports:
       - 21:21
     # command: bash -c 'cron && echo sleep 70 && sleep 70 && echo done sleeping && sed -i "s/CRON_TIME/$${CRON_TIME}/g" "$${PULLER_JOB_CRONTAB_FILE}" && sed -i "s/EXTRA_ARGS/$${EXTRA_ARGS}/g" "$${PULLER_JOB_CRONTAB_FILE}" && tail -f /var/log/cron.log'
     # command: bash -c 'echo sleep 5 && sleep 5 && cron && tail -f /var/log/cron.log'
     # command: bash -c 'cron && tail -f /var/log/cron.log'
-    command: bash -c '
-                      echo running sed -i "s|1 1 1 1 1|$${CRON_TIME}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
-                      sed -i "s|1 1 1 1 1|$${CRON_TIME}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
-                      echo running sed -i "s|EXTRA_ARGS|$${EXTRA_ARGS}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
-                      sed -i "s|EXTRA_ARGS|$${EXTRA_ARGS}|g" "$${PULLER_JOB_CRONTAB_FILE}" && 
-                      crontab "$${PULLER_JOB_CRONTAB_FILE}" && 
-                      unset CRON_TIME &&
-                      env >> /etc/environment &&
-                      cron && tail -f /var/log/cron.log
-                    '
+    command: bash -c 'python /root/ftp-files-puller.py $${EXTRA_ARGS}'
 
 

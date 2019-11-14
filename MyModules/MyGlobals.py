@@ -27,7 +27,7 @@ ftpPassword = os.getenv('FTP_PASSWORD', '')
 ftpRetriesCount = os.getenv('FTP_RETRIES_COUNT', ftpRetriesCount_Default)
 ftpSourcePath = os.getenv('FTP_SOURCE_PATH', '')
 destPath = os.getenv('FTP_DEST_PATH', '')
-ftpEncryptKey = os.getenv('FTP_ENCRYPT_KEY', '')
+ftpEncryptKey = os.getenv('FTP_ENCRYPT_KEY', '9PTLf_k100EtQTHMgCNoE7ac0dq8p0RwTzVJkjHG9wo=')
 passwordEncrypterExe = os.getenv('FTP_ENCRYPTER_PATH', '')
 ftpActionsTimeoutSec = os.getenv('FTP_ACTIONS_TIMEOUT', ftpActionsTimeoutSec_Default)
 isRemoveSrc = False
