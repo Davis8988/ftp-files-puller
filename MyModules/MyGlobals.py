@@ -1,4 +1,5 @@
 # Contains global functions to be used in other scripts
+
 import time
 import errno
 import os
@@ -6,6 +7,7 @@ import sys
 import ntpath
 import re
 import getopt
+import getpass
 
 from pyfiglet import Figlet
 
@@ -37,7 +39,7 @@ isVerbose = False
 isVeryVerbose = False
 
 # Python-Crontab
-crontab_user = os.getenv('CRONTAB_USER', True)  # Use 'True' for current user as default
+crontab_user = os.getenv('CRONTAB_USER', getpass.getuser())
 crontab_time = os.getenv('CRONTAB_TIME', '')
 crontab_comment = os.getenv('CRONTAB_COMMENT', crontabJobComment_Default)
 isSetupAsCronjob = False
