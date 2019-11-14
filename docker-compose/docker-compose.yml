@@ -14,12 +14,12 @@ services:
       - FTP_PASSWORD=gAAAAABdg4_xDNvtquLIZ3wVy1UyzmJ7-1XbYh9qDJ6WqngKo78mdSnvNyYX-68nsWSmzT7Y6Pu03_PZgbzEmuLcdeqFedQ3nA==
       - FTP_SOURCE_PATH=/Yokneam/Scripts/Stream
       - FTP_DEST_PATH=/home/ftp
-      - EXTRA_ARGS=--hashed --very_verbose --setup_as_crontab_job --crontab_time=* * * * *
+      - EXTRA_ARGS=--hashed --very_verbose --setup_as_crontab_job --crontab_time='* * * * *'
     ports:
       - 21:21
     # command: bash -c 'cron && echo sleep 70 && sleep 70 && echo done sleeping && sed -i "s/CRON_TIME/$${CRON_TIME}/g" "$${PULLER_JOB_CRONTAB_FILE}" && sed -i "s/EXTRA_ARGS/$${EXTRA_ARGS}/g" "$${PULLER_JOB_CRONTAB_FILE}" && tail -f /var/log/cron.log'
     # command: bash -c 'echo sleep 5 && sleep 5 && cron && tail -f /var/log/cron.log'
     # command: bash -c 'cron && tail -f /var/log/cron.log'
-    command: bash -c 'python /root/ftp-files-puller.py $${EXTRA_ARGS}'
+    command: bash -c "python /root/ftp-files-puller.py $${EXTRA_ARGS}"
 
 
