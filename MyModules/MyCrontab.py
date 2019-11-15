@@ -244,5 +244,5 @@ def create_crontab_command():
     if MyGlobals.isVeryVerbose:
         args += '--very_verbose '
 
-    full_command = 'python3 "' + full_script_path + '" ' + args
+    full_command = 'python "' + full_script_path + '" ' + args
     return full_command
