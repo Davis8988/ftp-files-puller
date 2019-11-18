@@ -44,7 +44,7 @@ def with_retry_count_decorate(action_description):
                 except BaseException as errorMsg:
                     print("\nFailed to {}.\nError:\n{}".format(action_description, errorMsg))
                     return None
-                MyGlobals.sleep_for_a_while(MyGlobals.sleepForBetweenActions_Default)
+                MyGlobals.sleep_for_a_while(MyGlobals.sleepBetweenRetriesSec_Default)
 
             print('Timeouts over - returning')
             return None
@@ -120,7 +120,7 @@ def ftp_get_pwd(ftp_con):
 
 def ftp_check_path_type(ftp_con, ftp_path_to_check):
     if MyGlobals.isVerbose:
-        print("Checking if folder or file: {} ".format(ftp_path_to_check))
+        print("Checking path-type of: {} ".format(ftp_path_to_check))
 
     if change_ftp_dir(ftp_con, ftp_path_to_check):
         return FTPPathType.FOLDER
@@ -169,8 +169,6 @@ def ftp_check_is_dir(ftp_con, ftp_path_to_check):
             return None
         ftp_con.cwd(ftp_path_to_check)
         ftp_con.cwd(cur_loc)
-        if MyGlobals.isVerbose:
-            print("{} is a directory".format(ftp_path_to_check))
         return True
     except ftplib.error_perm:
         if MyGlobals.isVerbose:
@@ -321,26 +319,27 @@ def _download_ftp_dir(ftp_con, ftp_src, dest):
     end_ind = len(file_list)
     download_process_ok = True
     while (download_process_ok and cur_ind < end_ind):
-        MyGlobals.sleep_for_a_while(MyGlobals.sleepBetweenDownloads_Default)
+        MyGlobals.sleep_for_a_while(MyGlobals.sleepBetweenDownloadsSec_Default)
         cur_target_name = file_list[cur_ind]
 
-        # Testing if it's a directory - then recurse
         try:
             target_path = ftp_src + "/" + cur_target_name
             # Check if a directory - if so then ftp-cd to it:
             if MyGlobals.isVerbose:
-                print("Checking if {} is a directory".format(target_path))
+                print("Checking path-type of: {}".format(target_path))
             is_dir = ftp_check_is_dir(ftp_con, target_path)
             if is_dir is None:
-                print('\nFailed checking if {} is a directory'.format(target_path))
+                print('\nFailed checking path-type of: {}'.format(target_path))
                 return False
             elif is_dir:
-                if not change_ftp_dir(ftp_con, target_path):
+                if MyGlobals.isVerbose:
+                    print("{} is a directory".format(target_path))
+                if not change_ftp_dir(ftp_con, target_path): # If it's a directory - prepare ftp cd index
                     return False
             else:
-                raise ftplib.error_perm("target_path={} is a file".format(target_path))
+                raise ftplib.error_perm("{} is a file".format(target_path))  # If it's a file - handle it outside of 'try' statement
 
-            download_process_ok = download_process_ok and _download_ftp_dir(ftp_con, target_path, dest + '/' + cur_target_name)
+            download_process_ok = download_process_ok and _download_ftp_dir(ftp_con, target_path, dest + '/' + cur_target_name)  # If it's a directory - recurse
             if download_process_ok and not change_ftp_dir(ftp_con, ftp_src):
                 return False
 
@@ -348,7 +347,7 @@ def _download_ftp_dir(ftp_con, ftp_src, dest):
             if download_process_ok and MyGlobals.isRemoveSrc:
                 download_process_ok = download_process_ok and ftp_delete_dir(ftp_con, target_path)
 
-        except ftplib.error_perm:
+        except ftplib.error_perm: # If it's a file - handle it here
             # It's a file:
             download_process_ok = download_process_ok and download_ftp_file(ftp_con, cur_target_name, dest)
 

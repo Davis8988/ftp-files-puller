@@ -77,6 +77,8 @@ def execute_current_ftp_puller_crontab_jobs():
     return True
 
 
+# Prints all installed crontab jobs with defined job-comment (via --crontab_comment or env 'CRONTAB_COMMENT')
+#   If no job-comment defined - then default one(defined in MyGlobals) is used
 def print_current_ftp_puller_crontab_jobs():
     comment_str = MyGlobals.crontab_comment
     user_to_use = MyGlobals.crontab_user
@@ -115,7 +117,7 @@ def setup_script_as_crontab_job():
     if not write_crontab_jobs(cron):
         return False
 
-    print('Success setting-up script to run as a crontab job\nIt will run automatically by the specified timing')
+    print('Success setting-up new crontab job:\n{}'.format(command_str))
     return True
 
 
