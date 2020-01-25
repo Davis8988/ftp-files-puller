@@ -1,4 +1,4 @@
-# For starting ftp-puller
+# PYTHONUNBUFFERED=1  to allow console logs to appear instantly (instead of being buffered)
 version: '3'
 
 services:
@@ -9,14 +9,16 @@ services:
     volumes:
       - /opt/sources/ftp-file-puller-git:/home/ftp
     environment:
+      - "PYTHONUNBUFFERED=1"
       - FTP_ADDRESS=ftp.elbitsystems.com
       - FTP_USER=dp99662
       - FTP_PASSWORD=gAAAAABdg4_xDNvtquLIZ3wVy1UyzmJ7-1XbYh9qDJ6WqngKo78mdSnvNyYX-68nsWSmzT7Y6Pu03_PZgbzEmuLcdeqFedQ3nA==
       - FTP_ENCRYPT_KEY=9PTLf_k100EtQTHMgCNoE7ac0dq8p0RwTzVJkjHG9wo=
       - FTP_SOURCE_PATH=/Yokneam/Scripts/Stream
       - FTP_DEST_PATH=/home/ftp
+      - CRONTAB_TIME=* * * * *
     ports:
       - 21:21
-    command: "python /root/ftp-files-puller.py --hashed --remove_src --very_verbose --setup_as_crontab_job --crontab_time='* * * * *' "
+    command: "python /root/ftp-files-puller.py --hashed --remove_src --very_verbose --setup_as_crontab_job "
 
 

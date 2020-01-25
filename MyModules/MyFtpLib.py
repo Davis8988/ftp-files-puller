@@ -85,8 +85,6 @@ def get_ftp_connection(ftp_addr, ftp_port, ftp_timeout):
 def _get_ftp_connection(ftp_addr, ftp_port, ftp_timeout):
     ftp_obj = ftplib.FTP(timeout=ftp_timeout)  # prepare FTP object with a timeout setting
     ftp_obj.connect(ftp_addr, ftp_port)  # connect to host,port
-    if MyGlobals.isVerbose:
-        print("Success - got connection to: {}:{}".format(ftp_addr, ftp_port))
     return ftp_obj
 
 
