@@ -1,4 +1,4 @@
-# PYTHONUNBUFFERED=1  to allow console logs to appear instantly (instead of being buffered)
+# use -u flag or env PYTHONUNBUFFERED=1  to allow console logs to appear instantly (instead of being buffered)
 version: '3'
 
 services:
@@ -9,7 +9,6 @@ services:
     volumes:
       - /opt/sources/ftp-file-puller-git:/home/ftp
     environment:
-      - "PYTHONUNBUFFERED=1"
       - FTP_ADDRESS=ftp.elbitsystems.com
       - FTP_USER=dp99662
       - FTP_PASSWORD=gAAAAABdg4_xDNvtquLIZ3wVy1UyzmJ7-1XbYh9qDJ6WqngKo78mdSnvNyYX-68nsWSmzT7Y6Pu03_PZgbzEmuLcdeqFedQ3nA==
@@ -19,6 +18,6 @@ services:
       - CRONTAB_TIME=* * * * *
     ports:
       - 21:21
-    command: "python /root/ftp-files-puller.py --hashed --remove_src --very_verbose --setup_as_crontab_job "
+    command: "python -u /root/ftp-files-puller.py --hashed --remove_src --very_verbose --setup_as_crontab_job "
 
 
