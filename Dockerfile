@@ -9,7 +9,7 @@ RUN apt-get update; apt-get -y install cron \
 COPY pip_requirements/requirements.txt /root/pip_requirements
 
 # Install pip requirements, and add the crontab file as a cronjob
-RUN pip install --upgrade pip; pip install -r /root/pip_requirements/requirements.txt;
+RUN cd /root/pip_requirements; ls -l; pip install --upgrade pip; pip install -r /root/pip_requirements/requirements.txt;
 
 COPY . /root
 
