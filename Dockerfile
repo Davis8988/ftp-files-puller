@@ -6,12 +6,10 @@ FROM python:3.7.2-slim
 RUN apt-get update; apt-get -y install cron \
                                        vim 
                                        
-COPY pip_requirements/requirements.txt /root/pip_requirements
-
-WORKDIR /root/pip_requirements
+COPY pip_requirements/requirements.txt /root/pip_requirements/
 
 # Install pip requirements, and add the crontab file as a cronjob
-RUN ls -l; pip install --upgrade pip; pip install -r /root/pip_requirements/requirements.txt;
+RUN pip install --upgrade pip; pip install -r /root/pip_requirements/requirements.txt;
 
 COPY . /root
 
