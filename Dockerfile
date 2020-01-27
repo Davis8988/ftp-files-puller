@@ -14,4 +14,4 @@ RUN pip install --upgrade pip; pip install -r /root/pip_requirements/requirement
 COPY . /root
 
 # Run cron on startup
-CMD cron
+ENTRYPOINT ["python", "/root/ftp-files-puller.py"]
