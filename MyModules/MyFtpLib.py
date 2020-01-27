@@ -93,8 +93,8 @@ def login_to_ftp_server(ftp_con, ftp_user, ftp_pass):
     if MyGlobals.isVerbose:
         print("Attempting to login to ftp server: {} with user: {}".format(ftp_con.host, ftp_user))
     login_result = _login_to_ftp_server(ftp_con, ftp_user, ftp_pass)
-    if login_result and MyGlobals.isVerbose:
-        print("Success - logged in to ftp server")
+    if login_result:
+        print("Success - logged in to ftp server: {} as user: {}".format(ftp_con.host, ftp_user))
     return login_result
 
 
