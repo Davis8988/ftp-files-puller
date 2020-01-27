@@ -43,7 +43,7 @@ def start_crontab_scheduler():
     MyGlobals.terminate_program(0, 'Finished running crontab scheduler for user: {}'.format(MyGlobals.crontab_user))
     return
 
-
+# Start downloading
 def pull_files_dirs_from_ftp():
     # Get connection to FTP server
     ftp_con = MyFtpLib.get_ftp_connection(MyGlobals.ftpAddr, MyGlobals.ftpPort, MyGlobals.ftpActionsTimeoutSec)
@@ -125,19 +125,15 @@ def check_params():
         MyGlobals.terminate_program(1)
 
 
-def download_from_ftp():
-    if MyGlobals.receivedDownloadArgs:  # Check if wants to run this script once
-        pull_files_dirs_from_ftp()  # Start downloading
-
-
 # -- Main function --
 def main():
     print_start_info()
     check_params()
 
-    check_crontab_helper_tasks()  # if 'setup_as_crontab_job' flag received - then main doesn't continue further from here. The download part occurs inside.
-
-    download_from_ftp()  # if just wants to downoad without using crontab helper tasks - then just go ahead and download now
+    if MyGlobals.isSetupAsCronjob:
+        check_crontab_helper_tasks()  # if '--setup_as_crontab_job' flag received - then main doesn't continue further from here. The download part occurs inside.
+    elif MyGlobals.receivedDownloadArgs:
+        pull_files_dirs_from_ftp()  # if just wants to downoad without using crontab helper-tasks - then just go ahead and download now
 
     # If got here - Finish successful:
     MyGlobals.terminate_program(0)

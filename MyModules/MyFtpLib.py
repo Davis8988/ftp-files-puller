@@ -53,25 +53,26 @@ def with_retry_count_decorate(action_description):
 
     return run_func_and_rerty_on_failure
 
-
+# Main download path from an FTP server
 def download_path(ftp_con, src_ftp_path, dest_path):
-    path_type = ftp_check_path_type(ftp_con, src_ftp_path)
+    path_type = ftp_check_path_type(ftp_con, src_ftp_path)  # File or Folder
     if path_type == FTPPathType.FILE:
         file_parent_dir = ntpath.split(src_ftp_path)[0]
         file_name = ntpath.basename(src_ftp_path)
-        if not change_ftp_dir(ftp_con, file_parent_dir):
+        if not change_ftp_dir(ftp_con, file_parent_dir):  # CD to ftp folder of the file
             return False
-        return download_ftp_file(ftp_con, file_name, dest_path, create_dirs=True)
+        return download_ftp_file(ftp_con, file_name, dest_path, create_dirs=True)  # Download the file
     elif path_type == FTPPathType.FOLDER:
-        return download_ftp_dir(ftp_con, src_ftp_path, dest_path)
+        return download_ftp_dir(ftp_con, src_ftp_path, dest_path)  # Folder type: Download folder
     elif path_type == FTPPathType.INVALID:
-        print('FTP Path {} is invalid'.format(src_ftp_path))
+        print('FTP Path {} is invalid'.format(src_ftp_path))  # Invalid path (or non existing)
         return None
-    elif path_type == FTPPathType.ERROR:
+    elif path_type == FTPPathType.ERROR:  # Failed checking path type
         print('Error while checking path {}\nCannot continue..'.format(src_ftp_path))
         return None
 
 
+# Get connection to FTP server using address & port
 def get_ftp_connection(ftp_addr, ftp_port, ftp_timeout):
     if MyGlobals.isVerbose:
         print("Getting ftp connection to: {}:{}".format(MyGlobals.ftpAddr, MyGlobals.ftpPort))
@@ -87,7 +88,7 @@ def _get_ftp_connection(ftp_addr, ftp_port, ftp_timeout):
     ftp_obj.connect(ftp_addr, ftp_port)  # connect to host,port
     return ftp_obj
 
-
+# Login to FTP server using credentials
 def login_to_ftp_server(ftp_con, ftp_user, ftp_pass):
     if MyGlobals.isVerbose:
         print("Attempting to login to ftp server: {} with user: {}".format(ftp_con.host, ftp_user))
@@ -115,23 +116,23 @@ def ftp_get_pwd(ftp_con):
         print('\nFailed getting current ftp dir\nError:\n{}'.format(errorMsg))
         return None
 
-
+# Check path type: File, Folder or Invalid (non exsiting?)
 def ftp_check_path_type(ftp_con, ftp_path_to_check):
     if MyGlobals.isVerbose:
         print("Checking path-type of: {} ".format(ftp_path_to_check))
 
-    if change_ftp_dir(ftp_con, ftp_path_to_check):
+    if change_ftp_dir(ftp_con, ftp_path_to_check):  # Try to CD to the path
         return FTPPathType.FOLDER
 
-    if MyGlobals.isVerbose:
+    if MyGlobals.isVeryVerbose:  # Couldn't CD to it so it's not a folder
         print("{} is not a folder. Checking if it's a file".format(ftp_path_to_check))
 
-    path_parent = ntpath.split(ftp_path_to_check)[0]
+    path_parent = ntpath.split(ftp_path_to_check)[0]  # Get parent dir of the path
     path_name = ntpath.basename(ftp_path_to_check)
-    if path_name == '':
+    if path_name == '':  # Special case
         return FTPPathType.ERROR
 
-    cur_loc = ftp_get_pwd(ftp_con)
+    cur_loc = ftp_get_pwd(ftp_con)  # Get current location of connection in the FTP server
     if not cur_loc:
         return FTPPathType.ERROR
 

@@ -126,7 +126,7 @@ def start_crontab_scheduler():
     cron = CronTab(user=user_to_use)
 
     try:
-        print('Started crontab scheduler for user: {}'.format(MyGlobals.crontab_user))
+        print('Started crontab-scheduler for user: {}'.format(MyGlobals.crontab_user))
         for result in cron.run_scheduler():
             print('Scheduler Run Result:\n{}\n'.format(result))
     except KeyboardInterrupt:
