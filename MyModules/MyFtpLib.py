@@ -303,7 +303,8 @@ def download_ftp_dir(ftp_con, ftp_src, dest):
 
 
 def _download_ftp_dir(ftp_con, ftp_src, dest):
-    print('Downloading dir: "{}" to: {}'.format(ftp_src, dest))
+    if not MyGlobals.isSilent:
+        print('Downloading dir: "{}" to: {}'.format(ftp_src, dest))
     if not prepare_ftp_and_os_indexes(ftp_con, ftp_src, dest):
         return False
 
@@ -312,7 +313,8 @@ def _download_ftp_dir(ftp_con, ftp_src, dest):
         return False
 
     ftp_src_dir_name = MyGlobals.get_dir_name(ftp_src)
-    print('Dir {} Files:\n  -- {}\n'.format(ftp_src_dir_name, '\n  -- '.join(file_list)))
+    if MyGlobals.isVerbose:
+        print('Dir {} Files:\n  -- {}\n'.format(ftp_src_dir_name, '\n  -- '.join(file_list)))
 
     cur_ind = 0
     end_ind = len(file_list)

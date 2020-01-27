@@ -70,7 +70,8 @@ def pull_files_dirs_from_ftp():
         MyGlobals.terminate_program(2, '\nFAILED - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath,
                                                                                   MyGlobals.destPath))
 
-    print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
+    if not MyGlobals.isSilent:
+        print('SUCCESS - Downloading: {} to: {}'.format(MyGlobals.ftpSourcePath, MyGlobals.destPath))
     return
 
 
@@ -86,7 +87,8 @@ def print_crontab_jobs_with_comment():
 # Prints starting info
 def print_start_info():
     received_args = MyGlobals.read_command_line_args(sys.argv[1:])
-    print('{}  - FTP Puller - Started'.format(MyGlobals.get_current_date_and_time_str()))
+    if not MyGlobals.isSilent:
+        print('{}  - FTP Puller - Started'.format(MyGlobals.get_current_date_and_time_str()))
 
     if MyGlobals.isVerbose:
         print('Command Line: {} {}\n'.format(sys.argv[0], received_args))
@@ -94,6 +96,11 @@ def print_start_info():
     if MyGlobals.isVeryVerbose:
         print('Configuration:\n{}'.format(MyGlobals.get_cur_configuration_str()))
 
+
+# Prints finish info
+def print_finish_info():
+    if not MyGlobals.isSilent:
+        print('\n{}  - FTP Puller - Finished'.format(MyGlobals.get_current_date_and_time_str()))
 
 # Checks if user wants to launch following tasks (independently):
 # - print current defined crontab jobs
@@ -128,14 +135,14 @@ def check_params():
 # -- Main function --
 def main():
     print_start_info()
-    check_params()
 
+    check_params()
     if MyGlobals.isSetupAsCronjob:
         check_crontab_helper_tasks()  # if '--setup_as_crontab_job' flag received - then main doesn't continue further from here. The download part occurs inside.
     elif MyGlobals.receivedDownloadArgs:
         pull_files_dirs_from_ftp()  # if just wants to downoad without using crontab helper-tasks - then just go ahead and download now
 
-    # If got here - Finish successful:
+    print_finish_info()
     MyGlobals.terminate_program(0)
 
 

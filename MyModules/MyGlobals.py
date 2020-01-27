@@ -285,9 +285,6 @@ def terminate_program(exit_code, msg=''):
     elif exit_code == 2:
         print('Aborting with error..')
 
-    if isVerbose:
-        print('\n{}  - FTP Puller - Finished'.format(get_current_date_and_time_str()))
-
     sys.exit(exit_code)
 
 
