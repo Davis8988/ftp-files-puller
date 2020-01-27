@@ -14,7 +14,7 @@
 #pathlib==1.0.1
 #pefile==2019.4.18
 #pycparser==2.19
-#pyfiglet==0.8.post1
+pyfiglet==0.8.post1
 #pylint==2.3.1
 #python-crontab==2.3.9
 #python-dateutil==2.8.0
