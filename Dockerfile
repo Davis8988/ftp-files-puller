@@ -1,10 +1,5 @@
 # Docker file for ftp-file-puller
 FROM python:3.7.2-slim
-    
-
-# Update apt-get & install utilities
-RUN apt-get update; apt-get -y install cron \
-                                       vim 
                                        
 COPY pip_requirements/requirements.txt /root/pip_requirements/
 
