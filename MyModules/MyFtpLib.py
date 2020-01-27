@@ -303,6 +303,7 @@ def download_ftp_dir(ftp_con, ftp_src, dest):
 
 
 def _download_ftp_dir(ftp_con, ftp_src, dest):
+    print("MyGlobals.isSilent={}".format(MyGlobals.isSilent))
     if not MyGlobals.isSilent:
         print('Downloading dir: "{}" to: {}'.format(ftp_src, dest))
     if not prepare_ftp_and_os_indexes(ftp_con, ftp_src, dest):

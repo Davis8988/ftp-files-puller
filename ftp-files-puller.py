@@ -85,8 +85,7 @@ def print_crontab_jobs_with_comment():
 
 
 # Prints starting info
-def print_start_info():
-    received_args = MyGlobals.read_command_line_args(sys.argv[1:])
+def print_start_info(received_args):
     if not MyGlobals.isSilent:
         print('{}  - FTP Puller - Started'.format(MyGlobals.get_current_date_and_time_str()))
 
@@ -134,7 +133,8 @@ def check_params():
 
 # -- Main function --
 def main():
-    print_start_info()
+    received_args = MyGlobals.read_command_line_args(sys.argv[1:])
+    print_start_info(received_args)
 
     check_params()
     if MyGlobals.isSetupAsCronjob:
