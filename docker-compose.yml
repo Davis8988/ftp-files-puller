@@ -11,7 +11,7 @@ services:
     environment:
       - FTP_ADDRESS=ftp.elbitsystems.com
       - FTP_USER=dp99662
-      - FTP_PASSWORD=gAAAAABdg4_xDNvtquLIZ3wVy1UyzmJ7-1XbYh9qDJ6WqngKo78mdSnvNyYX-68nsWSmzT7Y6Pu03_PZgbzEmuLcdeqFedQ3nA==
+      - FTP_PASSWORD=gAAAAABfEdFmzeDxO2M_1Dn4dtu9b7vdRPnWcaYYgJAQ30Wa-cqEo6Bsmn5-fKosb4_kmxo1bI7KWuRYN-VyhK_nMmWW-xZVvg==
       - FTP_ENCRYPT_KEY=9PTLf_k100EtQTHMgCNoE7ac0dq8p0RwTzVJkjHG9wo=
       - FTP_SOURCE_PATH=/Yokneam/Scripts/Stream
       - FTP_DEST_PATH=/home/ftp
