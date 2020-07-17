@@ -18,6 +18,6 @@ services:
       - CRONTAB_TIME=* * * * *
     ports:
       - 21:21
-    command: "python -u /root/ftp-files-puller.py --hashed --remove_src --setup_as_crontab_job "
+    command: "python -u /root/ftp-files-puller.py --verbose --hashed --remove_src --setup_as_crontab_job "
 
 
