@@ -8,7 +8,7 @@ davis==0.3
 dill==0.3.1.1
 isort==4.3.21
 lazy-object-proxy==1.4.1
-lxml==4.6.3
+lxml==4.6.5
 mccabe==0.6.1
 pathlib==1.0.1
 pefile==2019.4.18
